@@ -22,6 +22,7 @@ import {
   Landmark, UserCheck, MapPin, Clock,
   Globe, Bell, ChevronLeft, Gavel, Timer, Flame,
   HandCoins, AlertTriangle, ThumbsUp, ThumbsDown, Flag,
+  ShoppingBag, Building2, Briefcase,
   Sprout, Download, FileText
 } from 'lucide-react';
 
@@ -40,6 +41,9 @@ type User = {
   circlesCompleted: number;
   verificationLevel: 'basic' | 'verified' | 'premium';
   demographics?: Demographics;
+  organization?: string;
+  investmentBalance?: number;
+  retirementBalance?: number;
 };
 
 type Demographics = {
@@ -123,6 +127,45 @@ type YieldOpportunity = {
   provider: string;
 };
 
+type MarketplaceOffer = {
+  id: string;
+  vendor: string;
+  category: 'subscriptions' | 'gift_cards' | 'education' | 'services';
+  name: string;
+  description: string;
+  regularPrice: number;
+  groupPrice: number;
+  minGroupSize: number;
+  currentInterest: number;
+  expiresAt?: Date;
+};
+
+type GroupInvestment = {
+  id: string;
+  name: string;
+  description: string;
+  type: 'index' | 'real_estate' | 'treasury' | 'retirement';
+  poolSize: number;
+  yourContribution: number;
+  participants: number;
+  returnRate: number;
+  minContribution: number;
+  employerMatched?: boolean;
+};
+
+type EmployerProgram = {
+  id: string;
+  organizationName: string;
+  programType: 'employer' | 'union';
+  enrolledSince: Date;
+  matchPercentage: number;
+  maxMatch: number;
+  employeesEnrolled: number;
+  totalSaved: number;
+  benefits: string[];
+  payrollIntegration: boolean;
+};
+
 type MatchingFundProgram = {
   id: string;
   name: string;
@@ -189,6 +232,9 @@ const MOCK_USER: User = {
   circlesJoined: 8,
   circlesCompleted: 3,
   verificationLevel: 'verified',
+  organization: 'West Coast Workers Collective',
+  investmentBalance: 4200,
+  retirementBalance: 8500,
 };
 
 const MOCK_CIRCLES: SavingsCircle[] = [
@@ -416,6 +462,35 @@ const MOCK_YIELD_OPPORTUNITIES: YieldOpportunity[] = [
   { id: '3', name: 'Growth Fund', description: 'Long-term growth opportunity', apy: 12.5, minDeposit: 1000, riskLevel: 'high', lockupPeriod: '90 days', provider: 'GrowthDAO' },
 ];
 
+const MOCK_MARKETPLACE_OFFERS: MarketplaceOffer[] = [
+  { id: 'm1', vendor: 'NordVPN', category: 'subscriptions', name: 'NordVPN Group Plan', description: '2-year plan with group discount', regularPrice: 11.99, groupPrice: 4.99, minGroupSize: 10, currentInterest: 14 },
+  { id: 'm2', vendor: 'Amazon', category: 'gift_cards', name: 'Amazon Gift Card Bundle', description: '$100 face value gift cards at group rate', regularPrice: 100, groupPrice: 88, minGroupSize: 5, currentInterest: 23 },
+  { id: 'm3', vendor: 'Coursera', category: 'education', name: 'Coursera Plus Annual', description: 'Unlimited access to 7,000+ courses', regularPrice: 59, groupPrice: 29, minGroupSize: 8, currentInterest: 11 },
+  { id: 'm4', vendor: 'OpenAI', category: 'services', name: 'AI Credits Bundle', description: 'Bulk API credits for ChatGPT & tools', regularPrice: 200, groupPrice: 140, minGroupSize: 15, currentInterest: 8 },
+  { id: 'm5', vendor: 'Bread Cooperative', category: 'services', name: 'Safety Net Insurance', description: 'Cooperative mutual aid coverage', regularPrice: 45, groupPrice: 30, minGroupSize: 20, currentInterest: 31 },
+];
+
+const MOCK_GROUP_INVESTMENTS: GroupInvestment[] = [
+  { id: 'gi1', name: 'Digital Asset Index', description: 'Diversified basket of digital assets', type: 'index', poolSize: 12400, yourContribution: 1200, participants: 8, returnRate: 8.3, minContribution: 100 },
+  { id: 'gi2', name: 'Community Real Estate Fund', description: 'Fractional property investment in community housing', type: 'real_estate', poolSize: 45000, yourContribution: 2000, participants: 22, returnRate: 5.1, minContribution: 500 },
+  { id: 'gi3', name: 'Stack Treasury', description: 'Conservative fund for stable returns', type: 'treasury', poolSize: 8200, yourContribution: 1000, participants: 5, returnRate: 3.2, minContribution: 100 },
+  { id: 'gi4', name: 'Stacks Retirement Fund', description: 'Target-date 2055 retirement fund', type: 'retirement', poolSize: 284000, yourContribution: 5500, participants: 142, returnRate: 6.8, minContribution: 50, employerMatched: true },
+  { id: 'gi5', name: 'Union Pension Pool', description: 'Collective retirement savings managed by the cooperative', type: 'retirement', poolSize: 284000, yourContribution: 3000, participants: 142, returnRate: 5.5, minContribution: 25 },
+];
+
+const MOCK_EMPLOYER_PROGRAM: EmployerProgram = {
+  id: 'ep1',
+  organizationName: 'West Coast Workers Collective',
+  programType: 'union',
+  enrolledSince: new Date('2024-01-15'),
+  matchPercentage: 50,
+  maxMatch: 200,
+  employeesEnrolled: 142,
+  totalSaved: 284000,
+  benefits: ['Matched savings up to $200/month', 'Payroll integration', 'Retirement stack access', 'Exclusive marketplace deals'],
+  payrollIntegration: true,
+};
+
 const MOCK_MATCHING_PROGRAMS: MatchingFundProgram[] = [
   {
     id: '1',
@@ -474,6 +549,8 @@ const MOCK_WALLET: Wallet = {
     { id: 'tx4', type: 'payout', amount: 2000, currency: 'CRYPTO', status: 'completed', timestamp: new Date('2024-01-15'), description: 'Family Savings Stack payout', txHash: '0xdef...123' },
     { id: 'tx5', type: 'yield', amount: 12.50, currency: 'CRYPTO', status: 'completed', timestamp: new Date('2024-02-10'), description: 'Yield from Stacks Savings', txHash: '0x456...789' },
     { id: 'tx6', type: 'deposit', amount: 1000, currency: 'USD', status: 'pending', timestamp: new Date(), description: 'Bank transfer processing', txHash: undefined },
+    { id: 'tx7', type: 'contribution', amount: 88, currency: 'USD', status: 'completed', timestamp: new Date('2024-02-15'), description: 'Amazon Gift Card — Group Buy', txHash: '0xmkt...001' },
+    { id: 'tx8', type: 'contribution', amount: 200, currency: 'USD', status: 'completed', timestamp: new Date('2024-02-20'), description: 'Digital Asset Index — Group Investment', txHash: '0xinv...001' },
   ],
 };
 
@@ -548,8 +625,10 @@ function Navigation({ currentPage, setCurrentPage, user }: { currentPage: string
     { label: 'Dashboard', page: 'dashboard' },
     { label: 'Wallet', page: 'wallet' },
     { label: 'My Stacks', page: 'circles' },
+    { label: 'Marketplace', page: 'marketplace' },
+    { label: 'Investments', page: 'investments' },
+    { label: 'Organization', page: 'employer' },
     { label: 'Trust Score', page: 'credit' },
-    { label: 'Yield', page: 'yield' },
     { label: 'Matching Funds', page: 'matching' },
   ] : [
     { label: 'How it Works', page: 'how-it-works' },
@@ -711,7 +790,7 @@ function LandingPage({ setCurrentPage }: { setCurrentPage: (page: string) => voi
               </h1>
               
               <p className="text-lg text-[#6b7280] max-w-xl leading-relaxed">
-                Join or create rotating savings stacks with friends, family, and community members. 
+            Build collective financial power through savings stacks, group purchasing, and shared investments with your community. 
                 Build financial habits together and access matched savings opportunities.
               </p>
               
@@ -936,6 +1015,12 @@ function LandingPage({ setCurrentPage }: { setCurrentPage: (page: string) => voi
             Join thousands of people who are achieving their financial goals together. 
             Create your first stack in minutes.
           </p>
+          <div className="flex flex-wrap gap-3 justify-center mb-8">
+            <Badge className="bg-white/20 text-white px-4 py-1">Group Purchasing</Badge>
+            <Badge className="bg-white/20 text-white px-4 py-1">Employer Benefits</Badge>
+            <Badge className="bg-white/20 text-white px-4 py-1">Collective Investment</Badge>
+            <Badge className="bg-white/20 text-white px-4 py-1">Retirement Funds</Badge>
+          </div>
           <div className="flex flex-wrap justify-center gap-4">
             <Button onClick={() => setCurrentPage('signup')} size="lg" className="bg-white text-[#2467ec] hover:bg-gray-100 rounded-full px-8 h-14 text-base font-semibold">
               Get Started Free
@@ -1334,6 +1419,58 @@ function Dashboard({ user, setCurrentPage, navigateToCircle }: { user: User; set
               </CardContent>
             </Card>
 
+            {/* Organization */}
+            {user.organization && (
+              <Card className="border-0 shadow-lg cursor-pointer hover:shadow-xl transition-shadow" onClick={() => setCurrentPage('employer')}>
+                <CardContent className="p-6">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="w-10 h-10 rounded-lg bg-[#2467ec]/10 flex items-center justify-center">
+                      <Building2 className="w-5 h-5 text-[#2467ec]" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-[#12284b]">{user.organization}</h3>
+                      <p className="text-xs text-[#6b7280]">Union Benefits Program · Active</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-[#6b7280]">This month's match</span>
+                    <span className="font-medium text-[#1abc9c]">$150 of $200</span>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Marketplace Deals */}
+            <Card className="border-0 shadow-lg">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-lg font-['Poppins']">Marketplace Deals</CardTitle>
+                <CardDescription>Group discounts for stack members</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {MOCK_MARKETPLACE_OFFERS.slice(0, 3).map((offer) => {
+                    const discount = Math.round((1 - offer.groupPrice / offer.regularPrice) * 100);
+                    return (
+                      <div key={offer.id} className="flex items-center justify-between p-3 bg-[#f9fafb] rounded-xl hover:bg-gray-100 cursor-pointer" onClick={() => setCurrentPage('marketplace')}>
+                        <div>
+                          <p className="text-sm font-medium text-[#12284b]">{offer.name}</p>
+                          <p className="text-xs text-[#6b7280]">{offer.vendor}</p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-bold text-[#1abc9c]">${offer.groupPrice}</span>
+                          <span className="text-xs text-[#6b7280] line-through">${offer.regularPrice}</span>
+                          <Badge className="bg-[#1abc9c]/10 text-[#1abc9c] text-xs">-{discount}%</Badge>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+                <Button onClick={() => setCurrentPage('marketplace')} variant="outline" className="w-full mt-4 rounded-full">
+                  Browse Marketplace
+                </Button>
+              </CardContent>
+            </Card>
+
             <Card className="border-0 shadow-lg">
               <CardHeader>
                 <CardTitle className="text-xl font-['Poppins']">Quick Actions</CardTitle>
@@ -1344,6 +1481,8 @@ function Dashboard({ user, setCurrentPage, navigateToCircle }: { user: User; set
                     { icon: Plus, label: 'Add Money', action: () => setCurrentPage('add-money') },
                     { icon: UserPlus, label: 'Invite Friend', action: () => setCurrentPage('invite') },
                     { icon: Award, label: 'Trust Score', action: () => setCurrentPage('credit') },
+                    { icon: ShoppingBag, label: 'Marketplace', action: () => setCurrentPage('marketplace') },
+                    { icon: TrendingUp, label: 'Investments', action: () => setCurrentPage('investments') },
                     { icon: Settings, label: 'Settings', action: () => setCurrentPage('settings') },
                   ].map((action, i) => (
                     <button key={i} onClick={action.action} className="p-4 bg-[#f9fafb] rounded-xl hover:bg-gray-100 transition-colors text-center">
@@ -1791,9 +1930,9 @@ const TRUST_TIERS: TrustTier[] = ['newcomer', 'contributor', 'reliable', 'truste
 const TIER_UNLOCKS: Record<TrustTier, string[]> = {
   newcomer: ['Join savings stacks', 'Basic contributions'],
   contributor: ['Join more stacks', 'View community profiles'],
-  reliable: ['Matching fund eligibility', 'Priority stack invites'],
-  trusted: ['Loan access', 'Higher stack limits', 'Create unlimited stacks'],
-  pillar: ['Maximum matching funds', 'Priority access to new features', 'Community leader badge', 'Mentorship program'],
+  reliable: ['Matching fund eligibility', 'Marketplace access', 'Priority stack invites'],
+  trusted: ['Group investment eligibility', 'Loan access', 'Higher stack limits', 'Create unlimited stacks'],
+  pillar: ['Retirement fund access', 'Maximum matching funds', 'Priority access to new features', 'Community leader badge'],
 };
 
 const TIER_REQUIREMENTS: Record<TrustTier, string[]> = {
@@ -2037,69 +2176,482 @@ function TrustScorePage({ user }: { user: User }) {
   );
 }
 
-function YieldPage() {
+function MarketplacePage({ setCurrentPage }: { setCurrentPage: (page: string) => void }) {
+  const [category, setCategory] = useState<'all' | 'subscriptions' | 'gift_cards' | 'education' | 'services'>('all');
+  const filtered = MOCK_MARKETPLACE_OFFERS.filter(o => category === 'all' || o.category === category);
+
   return (
     <div className="min-h-screen bg-[#f9fafb] pt-24 pb-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-[#12284b] font-['Poppins']">Yield Opportunities</h1>
-          <p className="text-[#6b7280]">Grow your savings with competitive returns</p>
+          <h1 className="text-3xl font-bold text-[#12284b] font-['Poppins']">Marketplace</h1>
+          <p className="text-[#6b7280]">Unlock group discounts and collective purchasing power</p>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {MOCK_YIELD_OPPORTUNITIES.map((opportunity) => (
-            <Card key={opportunity.id} className="border-0 shadow-lg hover:shadow-xl transition-shadow">
-              <CardContent className="p-6">
-                <div className="flex items-start justify-between mb-4">
-                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${opportunity.riskLevel === 'low' ? 'bg-[#1abc9c]/10' : opportunity.riskLevel === 'medium' ? 'bg-[#f39c12]/10' : 'bg-[#e74c3c]/10'}`}>
-                    <TrendingUp className={`w-6 h-6 ${opportunity.riskLevel === 'low' ? 'text-[#1abc9c]' : opportunity.riskLevel === 'medium' ? 'text-[#f39c12]' : 'text-[#e74c3c]'}`} />
+        {/* Featured banner */}
+        <div className="mb-6 p-5 bg-gradient-to-r from-[#9b59b6] to-[#8e44ad] rounded-2xl text-white cursor-pointer hover:opacity-95 transition-opacity" onClick={() => setCurrentPage('investments')}>
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-white/70 text-sm mb-1">Featured</p>
+              <h3 className="text-xl font-bold font-['Poppins']">Collective Investment Opportunities</h3>
+              <p className="text-white/80 text-sm mt-1">Pool with your stack to invest together in digital assets, real estate, and more</p>
+            </div>
+            <ArrowRight className="w-6 h-6 flex-shrink-0" />
+          </div>
+        </div>
+
+        <div className="grid lg:grid-cols-3 gap-8">
+          <div className="lg:col-span-2 space-y-6">
+            {/* Category tabs */}
+            <div className="flex gap-2 flex-wrap">
+              {(['all', 'subscriptions', 'gift_cards', 'education', 'services'] as const).map((c) => (
+                <button key={c} onClick={() => setCategory(c)}
+                  className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${category === c ? 'bg-[#2467ec] text-white' : 'bg-white text-[#6b7280] hover:bg-gray-100'}`}>
+                  {c === 'all' ? 'All' : c === 'gift_cards' ? 'Gift Cards' : c.charAt(0).toUpperCase() + c.slice(1)}
+                </button>
+              ))}
+            </div>
+
+            {/* Offer cards */}
+            <div className="grid sm:grid-cols-2 gap-4">
+              {filtered.map((offer) => {
+                const discount = Math.round((1 - offer.groupPrice / offer.regularPrice) * 100);
+                return (
+                  <Card key={offer.id} className="border-0 shadow-lg hover:shadow-xl transition-shadow">
+                    <CardContent className="p-5">
+                      <div className="flex items-start justify-between mb-3">
+                        <div>
+                          <Badge className={`text-xs mb-2 ${offer.category === 'subscriptions' ? 'bg-[#2467ec]/10 text-[#2467ec]' : offer.category === 'gift_cards' ? 'bg-[#f39c12]/10 text-[#f39c12]' : offer.category === 'education' ? 'bg-[#9b59b6]/10 text-[#9b59b6]' : 'bg-[#1abc9c]/10 text-[#1abc9c]'}`}>
+                            {offer.category === 'gift_cards' ? 'Gift Cards' : offer.category.charAt(0).toUpperCase() + offer.category.slice(1)}
+                          </Badge>
+                          <h4 className="font-semibold text-[#12284b]">{offer.name}</h4>
+                          <p className="text-xs text-[#6b7280]">{offer.vendor}</p>
+                        </div>
+                        <div className="bg-[#1abc9c]/10 text-[#1abc9c] px-2 py-1 rounded-lg text-xs font-bold">-{discount}%</div>
+                      </div>
+                      <p className="text-sm text-[#6b7280] mb-3">{offer.description}</p>
+                      <div className="flex items-end justify-between mb-3">
+                        <div>
+                          <span className="text-lg font-bold text-[#12284b]">${offer.groupPrice}</span>
+                          <span className="text-sm text-[#6b7280] line-through ml-2">${offer.regularPrice}</span>
+                          <span className="text-xs text-[#6b7280]">{offer.category === 'subscriptions' || offer.category === 'services' ? '/mo' : ''}</span>
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between text-xs text-[#6b7280] mb-3">
+                        <span>{offer.minGroupSize} members needed</span>
+                        <span className="text-[#2467ec] font-medium">{offer.currentInterest} interested</span>
+                      </div>
+                      <Button className="w-full bg-[#2467ec] hover:bg-[#1a5fd4] rounded-full text-sm">
+                        <ShoppingBag className="w-3 h-3 mr-2" />
+                        Join Group Buy
+                      </Button>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Sidebar */}
+          <div className="space-y-6">
+            <Card className="border-0 shadow-lg">
+              <CardHeader>
+                <CardTitle className="font-['Poppins']">Your Group Power</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-[#6b7280]">Members across stacks</span>
+                    <span className="font-medium text-[#12284b]">19</span>
                   </div>
-                  <Badge variant="outline" className={opportunity.riskLevel === 'low' ? 'text-[#1abc9c] border-[#1abc9c]' : opportunity.riskLevel === 'medium' ? 'text-[#f39c12] border-[#f39c12]' : 'text-[#e74c3c] border-[#e74c3c]'}>
-                    {opportunity.riskLevel} risk
-                  </Badge>
+                  <Separator />
+                  <div className="flex justify-between text-sm">
+                    <span className="text-[#6b7280]">Collective purchasing power</span>
+                    <span className="font-medium text-[#1abc9c]">$15,600</span>
+                  </div>
+                  <Separator />
+                  <div className="flex justify-between text-sm">
+                    <span className="text-[#6b7280]">Active group buys</span>
+                    <span className="font-medium text-[#12284b]">2</span>
+                  </div>
+                  <Separator />
+                  <div className="flex justify-between text-sm">
+                    <span className="text-[#6b7280]">Saved from group purchases</span>
+                    <span className="font-medium text-[#1abc9c]">$340</span>
+                  </div>
                 </div>
-                <h3 className="text-lg font-semibold text-[#12284b] mb-1">{opportunity.name}</h3>
-                <p className="text-sm text-[#6b7280] mb-4">{opportunity.description}</p>
-                <div className="flex items-end justify-between mb-4">
-                  <div>
-                    <p className="text-3xl font-bold text-[#1abc9c] font-['Poppins']">{opportunity.apy}%</p>
-                    <p className="text-sm text-[#6b7280]">APY</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm text-[#12284b]">${opportunity.minDeposit} min</p>
-                    <p className="text-sm text-[#6b7280]">{opportunity.lockupPeriod} lockup</p>
-                  </div>
+              </CardContent>
+            </Card>
+
+            <Card className="border-0 shadow-lg bg-gradient-to-br from-[#2467ec] to-[#1abc9c]">
+              <CardContent className="p-6 text-white">
+                <div className="flex items-center gap-2 mb-3">
+                  <Users className="w-5 h-5" />
+                  <span className="font-semibold">Bigger Group = Bigger Savings</span>
                 </div>
-                <Button className="w-full bg-[#2467ec] hover:bg-[#1a5fd4] rounded-full">
-                  Start Earning
+                <p className="text-white/80 text-sm mb-4">Invite more members to your stacks to unlock better group pricing on marketplace deals.</p>
+                <Button variant="secondary" className="w-full rounded-full bg-white text-[#2467ec] hover:bg-gray-100">
+                  Invite Members
                 </Button>
               </CardContent>
             </Card>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function InvestmentsPage({ user, setCurrentPage: _setCurrentPage }: { user: User; setCurrentPage: (page: string) => void }) {
+  const [tab, setTab] = useState<'yield' | 'group' | 'retirement'>('yield');
+
+  return (
+    <div className="min-h-screen bg-[#f9fafb] pt-24 pb-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-[#12284b] font-['Poppins']">Investments</h1>
+          <p className="text-[#6b7280]">Earn yield individually and invest collectively with your stacks</p>
+        </div>
+
+        {/* Summary cards */}
+        <div className="grid md:grid-cols-3 gap-6 mb-8">
+          <Card className="border-0 shadow-lg bg-gradient-to-br from-[#2467ec] to-[#1a5fd4]">
+            <CardContent className="p-6 text-white">
+              <p className="text-white/70 text-sm">Your Yield Earnings</p>
+              <p className="text-3xl font-bold font-['Poppins'] mt-1">$127.50</p>
+              <p className="text-white/70 text-sm mt-1">Interest earned this year</p>
+            </CardContent>
+          </Card>
+          <Card className="border-0 shadow-lg bg-gradient-to-br from-[#1abc9c] to-[#16a085]">
+            <CardContent className="p-6 text-white">
+              <p className="text-white/70 text-sm">Group Investments</p>
+              <p className="text-3xl font-bold font-['Poppins'] mt-1">${(user.investmentBalance ?? 0).toLocaleString()}</p>
+              <p className="text-white/70 text-sm mt-1">Across 3 collective pools</p>
+            </CardContent>
+          </Card>
+          <Card className="border-0 shadow-lg bg-gradient-to-br from-[#9b59b6] to-[#8e44ad]">
+            <CardContent className="p-6 text-white">
+              <p className="text-white/70 text-sm">Retirement Balance</p>
+              <p className="text-3xl font-bold font-['Poppins'] mt-1">${(user.retirementBalance ?? 0).toLocaleString()}</p>
+              <p className="text-white/70 text-sm mt-1">+$3,000 employer match</p>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Tabs */}
+        <div className="flex gap-2 mb-6">
+          {([['yield', 'Your Yield'], ['group', 'Group Investments'], ['retirement', 'Retirement']] as const).map(([key, label]) => (
+            <button key={key} onClick={() => setTab(key)}
+              className={`px-5 py-2.5 rounded-full text-sm font-medium transition-colors ${tab === key ? 'bg-[#2467ec] text-white' : 'bg-white text-[#6b7280] hover:bg-gray-100'}`}>
+              {label}
+            </button>
           ))}
         </div>
 
-        <Card className="border-0 shadow-lg mt-8">
+        {/* Your Yield tab */}
+        {tab === 'yield' && (
+          <div className="space-y-6">
+            <div className="p-4 bg-[#2467ec]/5 rounded-xl border border-[#2467ec]/20 mb-2">
+              <p className="text-sm text-[#12284b]"><Sparkles className="w-4 h-4 inline mr-1 text-[#2467ec]" />Your savings earn interest automatically while they sit in your wallet. No action needed.</p>
+            </div>
+            <div className="grid md:grid-cols-3 gap-6">
+              {MOCK_YIELD_OPPORTUNITIES.map((opp) => (
+                <Card key={opp.id} className="border-0 shadow-lg hover:shadow-xl transition-shadow">
+                  <CardContent className="p-6">
+                    <div className="flex items-start justify-between mb-4">
+                      <div>
+                        <h3 className="font-semibold text-[#12284b] mb-1">{opp.name}</h3>
+                        <p className="text-sm text-[#6b7280]">{opp.description}</p>
+                      </div>
+                      <Badge className={opp.riskLevel === 'low' ? 'bg-[#1abc9c]/10 text-[#1abc9c]' : opp.riskLevel === 'medium' ? 'bg-[#f39c12]/10 text-[#f39c12]' : 'bg-[#e74c3c]/10 text-[#e74c3c]'}>
+                        {opp.riskLevel}
+                      </Badge>
+                    </div>
+                    <div className="text-center py-4 bg-[#f9fafb] rounded-xl mb-4">
+                      <p className="text-3xl font-bold text-[#2467ec] font-['Poppins']">{opp.apy}%</p>
+                      <p className="text-sm text-[#6b7280]">APY</p>
+                    </div>
+                    <div className="space-y-2 text-sm mb-4">
+                      <div className="flex justify-between"><span className="text-[#6b7280]">Min. deposit</span><span className="text-[#12284b]">${opp.minDeposit}</span></div>
+                      <div className="flex justify-between"><span className="text-[#6b7280]">Lock-up</span><span className="text-[#12284b]">{opp.lockupPeriod}</span></div>
+                      <div className="flex justify-between"><span className="text-[#6b7280]">Provider</span><span className="text-[#12284b]">{opp.provider}</span></div>
+                    </div>
+                    <Button className="w-full bg-[#2467ec] hover:bg-[#1a5fd4] rounded-full">Start Earning</Button>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Group Investments tab */}
+        {tab === 'group' && (
+          <div className="space-y-6">
+            <div className="p-4 bg-[#1abc9c]/5 rounded-xl border border-[#1abc9c]/20 mb-2">
+              <p className="text-sm text-[#12284b]"><Users className="w-4 h-4 inline mr-1 text-[#1abc9c]" />Pool with your stack members to invest collectively. Bigger pools, better opportunities.</p>
+            </div>
+            {MOCK_GROUP_INVESTMENTS.filter(i => i.type !== 'retirement').map((inv) => (
+              <Card key={inv.id} className="border-0 shadow-lg">
+                <CardContent className="p-6">
+                  <div className="flex items-start justify-between mb-4">
+                    <div>
+                      <h3 className="text-xl font-semibold text-[#12284b]">{inv.name}</h3>
+                      <p className="text-[#6b7280]">{inv.description}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-2xl font-bold text-[#1abc9c] font-['Poppins']">+{inv.returnRate}%</p>
+                      <p className="text-xs text-[#6b7280]">return rate</p>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-4 gap-4 mb-4">
+                    <div className="text-center p-3 bg-[#f9fafb] rounded-xl">
+                      <p className="text-lg font-bold text-[#12284b] font-['Poppins']">${(inv.poolSize / 1000).toFixed(1)}K</p>
+                      <p className="text-xs text-[#6b7280]">Pool Size</p>
+                    </div>
+                    <div className="text-center p-3 bg-[#f9fafb] rounded-xl">
+                      <p className="text-lg font-bold text-[#2467ec] font-['Poppins']">${inv.yourContribution.toLocaleString()}</p>
+                      <p className="text-xs text-[#6b7280]">Your Share</p>
+                    </div>
+                    <div className="text-center p-3 bg-[#f9fafb] rounded-xl">
+                      <p className="text-lg font-bold text-[#12284b] font-['Poppins']">{inv.participants}</p>
+                      <p className="text-xs text-[#6b7280]">Participants</p>
+                    </div>
+                    <div className="text-center p-3 bg-[#f9fafb] rounded-xl">
+                      <p className="text-lg font-bold text-[#12284b] font-['Poppins']">${inv.minContribution}</p>
+                      <p className="text-xs text-[#6b7280]">Min.</p>
+                    </div>
+                  </div>
+                  <Button className="bg-[#1abc9c] hover:bg-[#16a085] rounded-full">
+                    <DollarSign className="w-4 h-4 mr-2" />Contribute More
+                  </Button>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
+
+        {/* Retirement tab */}
+        {tab === 'retirement' && (
+          <div className="space-y-6">
+            <div className="p-4 bg-[#9b59b6]/5 rounded-xl border border-[#9b59b6]/20 mb-2">
+              <p className="text-sm text-[#12284b]"><Shield className="w-4 h-4 inline mr-1 text-[#9b59b6]" />Long-term collective savings for your future. {user.organization && `Your organization matches contributions.`}</p>
+            </div>
+            {MOCK_GROUP_INVESTMENTS.filter(i => i.type === 'retirement').map((fund) => (
+              <Card key={fund.id} className="border-0 shadow-lg">
+                <CardContent className="p-6">
+                  <div className="flex items-start justify-between mb-4">
+                    <div>
+                      <h3 className="text-xl font-semibold text-[#12284b]">{fund.name}</h3>
+                      <p className="text-[#6b7280]">{fund.description}</p>
+                    </div>
+                    {fund.employerMatched && (
+                      <Badge className="bg-[#1abc9c]/10 text-[#1abc9c]"><Gift className="w-3 h-3 mr-1" />Employer Matched</Badge>
+                    )}
+                  </div>
+                  <div className="grid md:grid-cols-4 gap-4 mb-4">
+                    <div className="text-center p-4 bg-[#9b59b6]/5 rounded-xl">
+                      <p className="text-2xl font-bold text-[#9b59b6] font-['Poppins']">${fund.yourContribution.toLocaleString()}</p>
+                      <p className="text-xs text-[#6b7280]">Your Balance</p>
+                    </div>
+                    <div className="text-center p-4 bg-[#1abc9c]/5 rounded-xl">
+                      <p className="text-2xl font-bold text-[#1abc9c] font-['Poppins']">{fund.employerMatched ? '$3,000' : '$0'}</p>
+                      <p className="text-xs text-[#6b7280]">Employer Match</p>
+                    </div>
+                    <div className="text-center p-4 bg-[#f9fafb] rounded-xl">
+                      <p className="text-2xl font-bold text-[#12284b] font-['Poppins']">{fund.participants}</p>
+                      <p className="text-xs text-[#6b7280]">Participants</p>
+                    </div>
+                    <div className="text-center p-4 bg-[#f9fafb] rounded-xl">
+                      <p className="text-2xl font-bold text-[#2467ec] font-['Poppins']">+{fund.returnRate}%</p>
+                      <p className="text-xs text-[#6b7280]">Return Rate</p>
+                    </div>
+                  </div>
+                  {fund.employerMatched && (
+                    <div className="p-3 bg-[#f39c12]/5 rounded-lg mb-4">
+                      <p className="text-sm text-[#f39c12] font-medium">Projected value at retirement: $142,000</p>
+                    </div>
+                  )}
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <span className="text-sm text-[#6b7280]">Auto-contribute</span>
+                      <button className="w-12 h-6 rounded-full bg-[#2467ec] relative">
+                        <span className="absolute top-0.5 w-5 h-5 rounded-full bg-white shadow translate-x-6" />
+                      </button>
+                    </div>
+                    <Button className="bg-[#9b59b6] hover:bg-[#8e44ad] rounded-full">
+                      <DollarSign className="w-4 h-4 mr-2" />Contribute
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function OrganizationPage({ user, setCurrentPage }: { user: User; setCurrentPage: (page: string) => void }) {
+  const program = MOCK_EMPLOYER_PROGRAM;
+
+  return (
+    <div className="min-h-screen bg-[#f9fafb] pt-24 pb-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Header */}
+        <div className="mb-8">
+          <div className="flex items-center gap-4 mb-2">
+            <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-[#2467ec] to-[#1abc9c] flex items-center justify-center">
+              <Building2 className="w-7 h-7 text-white" />
+            </div>
+            <div>
+              <h1 className="text-3xl font-bold text-[#12284b] font-['Poppins']">{program.organizationName}</h1>
+              <div className="flex items-center gap-2 mt-1">
+                <Badge className="bg-[#2467ec]/10 text-[#2467ec]">{program.programType === 'union' ? 'Union Benefits Program' : 'Employer Benefits'}</Badge>
+                <Badge className="bg-[#1abc9c]/10 text-[#1abc9c]">Active</Badge>
+              </div>
+            </div>
+          </div>
+          <p className="text-[#6b7280]">Member since {program.enrolledSince.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</p>
+        </div>
+
+        {/* Benefits grid */}
+        <div className="grid md:grid-cols-2 gap-6 mb-8">
+          <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow">
+            <CardContent className="p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-12 h-12 rounded-xl bg-[#1abc9c]/10 flex items-center justify-center">
+                  <Gift className="w-6 h-6 text-[#1abc9c]" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-[#12284b]">Matched Savings</h3>
+                  <p className="text-sm text-[#6b7280]">Your organization matches your contributions</p>
+                </div>
+              </div>
+              <div className="p-4 bg-[#1abc9c]/5 rounded-xl mb-3">
+                <div className="flex justify-between mb-1">
+                  <span className="text-sm text-[#6b7280]">Match rate</span>
+                  <span className="font-bold text-[#1abc9c]">{program.matchPercentage}%</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-[#6b7280]">Up to</span>
+                  <span className="font-bold text-[#12284b]">${program.maxMatch}/month</span>
+                </div>
+              </div>
+              <div className="p-3 bg-[#f9fafb] rounded-lg">
+                <p className="text-xs text-[#6b7280]">This month's match</p>
+                <p className="text-lg font-bold text-[#1abc9c]">$150 <span className="text-xs font-normal text-[#6b7280]">of $200 max</span></p>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow">
+            <CardContent className="p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-12 h-12 rounded-xl bg-[#2467ec]/10 flex items-center justify-center">
+                  <Briefcase className="w-6 h-6 text-[#2467ec]" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-[#12284b]">Payroll Integration</h3>
+                  <p className="text-sm text-[#6b7280]">Auto-contribute from your paycheck</p>
+                </div>
+              </div>
+              <div className="flex items-center justify-between p-4 bg-[#2467ec]/5 rounded-xl mb-3">
+                <div>
+                  <p className="font-medium text-[#12284b]">Auto-contribute enabled</p>
+                  <p className="text-sm text-[#6b7280]">$300 per paycheck → Stack contributions</p>
+                </div>
+                <button className="w-12 h-6 rounded-full bg-[#2467ec] relative">
+                  <span className="absolute top-0.5 w-5 h-5 rounded-full bg-white shadow translate-x-6" />
+                </button>
+              </div>
+              <p className="text-xs text-[#6b7280]">Next contribution: March 1, 2024</p>
+            </CardContent>
+          </Card>
+
+          <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow cursor-pointer" onClick={() => setCurrentPage('investments')}>
+            <CardContent className="p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-12 h-12 rounded-xl bg-[#9b59b6]/10 flex items-center justify-center">
+                  <TrendingUp className="w-6 h-6 text-[#9b59b6]" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-[#12284b]">Retirement Stack</h3>
+                  <p className="text-sm text-[#6b7280]">Long-term collective savings</p>
+                </div>
+              </div>
+              <div className="text-center p-4 bg-[#9b59b6]/5 rounded-xl mb-3">
+                <p className="text-3xl font-bold text-[#9b59b6] font-['Poppins']">${(user.retirementBalance ?? 0).toLocaleString()}</p>
+                <p className="text-sm text-[#6b7280]">Your retirement balance</p>
+                <p className="text-xs text-[#1abc9c] mt-1">+$3,000 employer match</p>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-[#6b7280]">Projected at retirement</span>
+                <span className="font-medium text-[#12284b]">$142,000</span>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow cursor-pointer" onClick={() => setCurrentPage('marketplace')}>
+            <CardContent className="p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-12 h-12 rounded-xl bg-[#f39c12]/10 flex items-center justify-center">
+                  <ShoppingBag className="w-6 h-6 text-[#f39c12]" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-[#12284b]">Group Benefits</h3>
+                  <p className="text-sm text-[#6b7280]">Exclusive deals for members</p>
+                </div>
+              </div>
+              <div className="space-y-2 mb-3">
+                {MOCK_MARKETPLACE_OFFERS.slice(0, 3).map((offer) => {
+                  const discount = Math.round((1 - offer.groupPrice / offer.regularPrice) * 100);
+                  return (
+                    <div key={offer.id} className="flex items-center justify-between p-2 bg-[#f9fafb] rounded-lg">
+                      <span className="text-sm text-[#12284b]">{offer.name}</span>
+                      <Badge className="bg-[#1abc9c]/10 text-[#1abc9c] text-xs">-{discount}%</Badge>
+                    </div>
+                  );
+                })}
+              </div>
+              <p className="text-xs text-[#2467ec] font-medium">View all marketplace deals →</p>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Organization stats */}
+        <Card className="border-0 shadow-lg mb-8">
           <CardHeader>
-            <CardTitle className="font-['Poppins']">How Yield Works</CardTitle>
+            <CardTitle className="font-['Poppins']">Organization Overview</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid md:grid-cols-3 gap-6">
-              {[
-                { icon: PiggyBank, title: 'Deposit Funds', desc: 'Add money to your Stacks wallet or directly to yield products' },
-                { icon: TrendingUp, title: 'Earn Daily', desc: 'Interest accrues daily and compounds automatically' },
-                { icon: Wallet, title: 'Withdraw Anytime', desc: 'Access your funds when you need them (terms vary by product)' },
-              ].map((step, i) => (
-                <div key={i} className="text-center">
-                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#2467ec] to-[#1abc9c] flex items-center justify-center mx-auto mb-4">
-                    <step.icon className="w-8 h-8 text-white" />
-                  </div>
-                  <h4 className="font-semibold text-[#12284b] mb-2">{step.title}</h4>
-                  <p className="text-sm text-[#6b7280]">{step.desc}</p>
-                </div>
-              ))}
+              <div className="text-center p-4 bg-[#f9fafb] rounded-xl">
+                <p className="text-3xl font-bold text-[#2467ec] font-['Poppins']">{program.employeesEnrolled}</p>
+                <p className="text-sm text-[#6b7280]">Members Enrolled</p>
+              </div>
+              <div className="text-center p-4 bg-[#f9fafb] rounded-xl">
+                <p className="text-3xl font-bold text-[#1abc9c] font-['Poppins']">${(program.totalSaved / 1000).toFixed(0)}K</p>
+                <p className="text-sm text-[#6b7280]">Total Saved by Members</p>
+              </div>
+              <div className="text-center p-4 bg-[#f9fafb] rounded-xl">
+                <p className="text-3xl font-bold text-[#f39c12] font-['Poppins']">$350</p>
+                <p className="text-sm text-[#6b7280]">Avg. Monthly Savings</p>
+              </div>
             </div>
           </CardContent>
         </Card>
+
+        {/* Trust notice */}
+        <div className="p-4 bg-[#2467ec]/5 rounded-xl border border-[#2467ec]/20">
+          <div className="flex items-start gap-3">
+            <Shield className="w-5 h-5 text-[#2467ec] flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="font-medium text-[#12284b] text-sm">Your funds are always yours</p>
+              <p className="text-xs text-[#6b7280]">Your {program.programType === 'union' ? 'union' : 'employer'} facilitates access to Stacks as a member benefit. They cannot access or control your individual savings.</p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -2520,6 +3072,32 @@ function ProfilePage({ user, setCurrentPage }: { user: User; setCurrentPage: (pa
             </div>
           </CardContent>
         </Card>
+
+        {user.organization && (
+          <Card className="border-0 shadow-lg mb-6">
+            <CardContent className="p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 rounded-lg bg-[#2467ec]/10 flex items-center justify-center">
+                  <Building2 className="w-5 h-5 text-[#2467ec]" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-[#12284b]">{user.organization}</h3>
+                  <p className="text-sm text-[#6b7280]">Union Member</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="p-3 bg-[#f9fafb] rounded-lg">
+                  <p className="text-xs text-[#6b7280]">Investments</p>
+                  <p className="font-bold text-[#12284b]">${(user.investmentBalance ?? 0).toLocaleString()}</p>
+                </div>
+                <div className="p-3 bg-[#f9fafb] rounded-lg">
+                  <p className="text-xs text-[#6b7280]">Retirement</p>
+                  <p className="font-bold text-[#9b59b6]">${(user.retirementBalance ?? 0).toLocaleString()}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         <div className="grid md:grid-cols-2 gap-6">
           <Card className="border-0 shadow-lg">
@@ -3384,7 +3962,13 @@ function App() {
       case 'credit':
         return user ? <TrustScorePage user={user} /> : <LandingPage setCurrentPage={setCurrentPage} />;
       case 'yield':
-        return <YieldPage />;
+        return <InvestmentsPage user={user!} setCurrentPage={setCurrentPage} />;
+      case 'investments':
+        return <InvestmentsPage user={user!} setCurrentPage={setCurrentPage} />;
+      case 'marketplace':
+        return <MarketplacePage setCurrentPage={setCurrentPage} />;
+      case 'employer':
+        return user ? <OrganizationPage user={user} setCurrentPage={setCurrentPage} /> : <LandingPage setCurrentPage={setCurrentPage} />;
       case 'matching':
         return <MatchingFundsPage setCurrentPage={setCurrentPage} />;
       case 'demographics':
