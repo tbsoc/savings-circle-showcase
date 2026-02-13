@@ -189,7 +189,7 @@ const MOCK_USER: User = {
 const MOCK_CIRCLES: SavingsCircle[] = [
   {
     id: '1',
-    name: 'Family Savings Circle',
+    name: 'Family Savings Stack',
     type: 'rosca',
     description: 'Monthly savings with family members',
     members: [
@@ -348,7 +348,7 @@ const MOCK_MATCHING_PROGRAMS: MatchingFundProgram[] = [
     id: '2',
     name: 'Family Emergency Fund',
     organization: 'Family Support Network',
-    description: 'Match for emergency savings circles',
+    description: 'Match for emergency savings stacks',
     matchRatio: '2:1',
     maxMatch: 1000,
     eligibilityCriteria: ['Household with children', 'Emergency fund purpose', 'Verified identity'],
@@ -378,8 +378,8 @@ const MOCK_WALLET: Wallet = {
   transactions: [
     { id: 'tx1', type: 'deposit', amount: 1000, currency: 'USD', status: 'completed', timestamp: new Date('2024-01-15'), description: 'Bank transfer from Chase ****1234', txHash: '0xabc...def' },
     { id: 'tx2', type: 'deposit', amount: 500, currency: 'USD', status: 'completed', timestamp: new Date('2024-02-01'), description: 'Debit card deposit', txHash: '0x123...456' },
-    { id: 'tx3', type: 'contribution', amount: 500, currency: 'CRYPTO', status: 'completed', timestamp: new Date('2024-02-01'), description: 'Family Savings Circle contribution', txHash: '0x789...abc' },
-    { id: 'tx4', type: 'payout', amount: 2000, currency: 'CRYPTO', status: 'completed', timestamp: new Date('2024-01-15'), description: 'Family Savings Circle payout', txHash: '0xdef...123' },
+    { id: 'tx3', type: 'contribution', amount: 500, currency: 'CRYPTO', status: 'completed', timestamp: new Date('2024-02-01'), description: 'Family Savings Stack contribution', txHash: '0x789...abc' },
+    { id: 'tx4', type: 'payout', amount: 2000, currency: 'CRYPTO', status: 'completed', timestamp: new Date('2024-01-15'), description: 'Family Savings Stack payout', txHash: '0xdef...123' },
     { id: 'tx5', type: 'yield', amount: 12.50, currency: 'CRYPTO', status: 'completed', timestamp: new Date('2024-02-10'), description: 'Yield from CircleWealth Savings', txHash: '0x456...789' },
     { id: 'tx6', type: 'deposit', amount: 1000, currency: 'USD', status: 'pending', timestamp: new Date(), description: 'Bank transfer processing', txHash: undefined },
   ],
@@ -454,7 +454,7 @@ function Navigation({ currentPage, setCurrentPage, user }: { currentPage: string
   const navLinks = user ? [
     { label: 'Dashboard', page: 'dashboard' },
     { label: 'Wallet', page: 'wallet' },
-    { label: 'My Circles', page: 'circles' },
+    { label: 'My Stacks', page: 'circles' },
     { label: 'Trust Score', page: 'credit' },
     { label: 'Yield', page: 'yield' },
     { label: 'Matching Funds', page: 'matching' },
@@ -502,7 +502,10 @@ function Navigation({ currentPage, setCurrentPage, user }: { currentPage: string
                       {user.name.split(' ').map(n => n[0]).join('')}
                     </AvatarFallback>
                   </Avatar>
-                  <span className="text-sm font-medium text-[#12284b]">{user.name.split(' ')[0]}</span>
+                  <div className="text-left">
+                    <span className="text-sm font-medium text-[#12284b] block">{user.name.split(' ')[0]}</span>
+                    <span className="text-xs text-[#1abc9c] font-medium">$3,923.50</span>
+                  </div>
                 </button>
               </div>
             ) : (
@@ -581,13 +584,13 @@ function LandingPage({ setCurrentPage }: { setCurrentPage: (page: string) => voi
               </h1>
               
               <p className="text-lg text-[#6b7280] max-w-xl leading-relaxed">
-                Join or create rotating savings circles with friends, family, and community members. 
+                Join or create rotating savings stacks with friends, family, and community members. 
                 Build financial habits together and access matched savings opportunities.
               </p>
               
               <div className="flex flex-wrap gap-4">
                 <Button onClick={() => setCurrentPage('signup')} size="lg" className="bg-[#2467ec] hover:bg-[#1a5fd4] text-white rounded-full px-8 h-14 text-base group">
-                  Start Your Circle
+                  Start Your Stack
                   <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
                 </Button>
                 <Button onClick={() => setCurrentPage('how-it-works')} variant="outline" size="lg" className="rounded-full px-8 h-14 text-base border-[#e5e7eb] hover:bg-gray-50">
@@ -647,7 +650,7 @@ function LandingPage({ setCurrentPage }: { setCurrentPage: (page: string) => voi
           
           <div className="grid md:grid-cols-3 gap-8 lg:gap-12">
             {[
-              { icon: Users, title: 'Create or Join a Circle', desc: 'Start your own savings circle with people you trust, or join an existing one with a simple invitation.', color: 'bg-[#2467ec]' },
+              { icon: Users, title: 'Create or Join a Stack', desc: 'Start your own savings stack with people you trust, or join an existing one with a simple invitation.', color: 'bg-[#2467ec]' },
               { icon: Wallet, title: 'Contribute Regularly', desc: 'Set up automatic contributions on a schedule that works for your group - weekly, bi-weekly, or monthly.', color: 'bg-[#1abc9c]' },
               { icon: Gift, title: 'Receive Your Payout', desc: 'Each cycle, one member receives the collective pot. Everyone gets their turn based on the rotation schedule.', color: 'bg-[#f39c12]' },
             ].map((step, i) => (
@@ -697,7 +700,7 @@ function LandingPage({ setCurrentPage }: { setCurrentPage: (page: string) => voi
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {[
               { icon: Shield, title: 'Bank-Grade Security', desc: '256-bit encryption and multi-factor authentication protect your funds.', color: 'from-[#2467ec] to-[#1a5fd4]' },
-              { icon: BarChart3, title: 'Transparent Tracking', desc: 'Real-time visibility into contributions, payouts, and circle progress.', color: 'from-[#1abc9c] to-[#16a085]' },
+              { icon: BarChart3, title: 'Transparent Tracking', desc: 'Real-time visibility into contributions, payouts, and stack progress.', color: 'from-[#1abc9c] to-[#16a085]' },
               { icon: Heart, title: 'Community Support', desc: 'Access financial coaching and resources to help you reach your goals.', color: 'from-[#f39c12] to-[#e67e22]' },
               { icon: TrendingUp, title: 'Matched Savings', desc: 'Qualify for matching funds from partner organizations.', color: 'from-[#9b59b6] to-[#8e44ad]' },
             ].map((feature, i) => (
@@ -724,7 +727,7 @@ function LandingPage({ setCurrentPage }: { setCurrentPage: (page: string) => voi
               <p className="text-[#6b7280] leading-relaxed text-lg">
                 CircleWealth was founded on a simple belief: when people come together to support each other's 
                 financial goals, everyone wins. We've taken the time-honored tradition of community savings 
-                circles and brought it into the digital age.
+                stacks and brought it into the digital age.
               </p>
               <Button onClick={() => setCurrentPage('about')} variant="outline" className="rounded-full px-6">
                 Our Story
@@ -760,7 +763,7 @@ function LandingPage({ setCurrentPage }: { setCurrentPage: (page: string) => voi
           <div className="grid md:grid-cols-3 gap-8">
             {[
               { name: 'Sarah M.', role: 'Teacher, Saved $12,000', avatar: '/avatar-sarah.jpg', quote: 'CircleWealth helped me save for my daughter\'s college fund in a way that kept me accountable. The community aspect made all the difference.', rating: 5 },
-              { name: 'Marcus T.', role: 'Small Business Owner', avatar: '/avatar-marcus.jpg', quote: 'I\'ve been part of savings circles before, but the transparency and ease of CircleWealth is unmatched. Highly recommend!', rating: 5 },
+              { name: 'Marcus T.', role: 'Small Business Owner', avatar: '/avatar-marcus.jpg', quote: 'I\'ve been part of savings stacks before, but the transparency and ease of CircleWealth is unmatched. Highly recommend!', rating: 5 },
               { name: 'Elena R.', role: 'Healthcare Worker', avatar: '/avatar-elena.jpg', quote: 'The matched savings program helped me reach my emergency fund goal twice as fast. This platform truly cares about its users.', rating: 5 },
             ].map((testimonial, i) => (
               <Card key={i} className="border-0 shadow-lg hover:shadow-xl transition-all">
@@ -804,7 +807,7 @@ function LandingPage({ setCurrentPage }: { setCurrentPage: (page: string) => voi
           </h2>
           <p className="text-white/80 text-lg mb-8 max-w-xl mx-auto">
             Join thousands of people who are achieving their financial goals together. 
-            Create your first circle in minutes.
+            Create your first stack in minutes.
           </p>
           <div className="flex flex-wrap justify-center gap-4">
             <Button onClick={() => setCurrentPage('signup')} size="lg" className="bg-white text-[#2467ec] hover:bg-gray-100 rounded-full px-8 h-14 text-base font-semibold">
@@ -1045,7 +1048,7 @@ function getCircleTypeDetail(circle: SavingsCircle): string {
 function Dashboard({ user, setCurrentPage, navigateToCircle }: { user: User; setCurrentPage: (page: string) => void; navigateToCircle: (id: string) => void }) {
   const stats = [
     { label: 'Total Saved', value: `$${user.totalSaved.toLocaleString()}`, icon: PiggyBank, change: '+12%', color: 'from-[#2467ec] to-[#1a5fd4]' },
-    { label: 'Active Circles', value: user.circlesJoined.toString(), icon: Users, change: '+2', color: 'from-[#1abc9c] to-[#16a085]' },
+    { label: 'Active Stacks', value: user.circlesJoined.toString(), icon: Users, change: '+2', color: 'from-[#1abc9c] to-[#16a085]' },
     { label: 'Trust Level', value: user.trustTier.charAt(0).toUpperCase() + user.trustTier.slice(1), icon: Award, change: `${user.trustProgress}% to next`, color: 'from-[#f39c12] to-[#e67e22]' },
     { label: 'Next Payout', value: '$2,000', icon: Calendar, change: 'In 5 days', color: 'from-[#9b59b6] to-[#8e44ad]' },
   ];
@@ -1082,12 +1085,12 @@ function Dashboard({ user, setCurrentPage, navigateToCircle }: { user: User; set
             <Card className="border-0 shadow-lg mb-8">
               <CardHeader className="flex flex-row items-center justify-between">
                 <div>
-                  <CardTitle className="text-xl font-['Poppins']">Your Savings Circles</CardTitle>
-                  <CardDescription>Active circles you're participating in</CardDescription>
+                  <CardTitle className="text-xl font-['Poppins']">Your Savings Stacks</CardTitle>
+                  <CardDescription>Active stacks you're participating in</CardDescription>
                 </div>
                 <Button onClick={() => setCurrentPage('create-circle')} className="bg-[#2467ec] hover:bg-[#1a5fd4] rounded-full">
                   <Plus className="w-4 h-4 mr-2" />
-                  Create Circle
+                  Create Stack
                 </Button>
               </CardHeader>
               <CardContent>
@@ -1248,12 +1251,12 @@ function CirclesPage({ setCurrentPage, navigateToCircle }: { setCurrentPage: (pa
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-[#12284b] font-['Poppins']">My Savings Circles</h1>
-            <p className="text-[#6b7280]">Manage and track your circles</p>
+            <h1 className="text-3xl font-bold text-[#12284b] font-['Poppins']">My Savings Stacks</h1>
+            <p className="text-[#6b7280]">Manage and track your stacks</p>
           </div>
           <Button onClick={() => setCurrentPage('create-circle')} className="bg-[#2467ec] hover:bg-[#1a5fd4] rounded-full">
             <Plus className="w-4 h-4 mr-2" />
-            Create New Circle
+            Create New Stack
           </Button>
         </div>
 
@@ -1364,12 +1367,12 @@ function CreateCirclePage({ setCurrentPage }: { setCurrentPage: (page: string) =
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
         <button onClick={() => setCurrentPage('circles')} className="flex items-center gap-2 text-[#6b7280] hover:text-[#12284b] mb-6">
           <ChevronLeft className="w-4 h-4" />
-          Back to Circles
+          Back to Stacks
         </button>
 
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-[#12284b] font-['Poppins']">Create Savings Circle</h1>
-          <p className="text-[#6b7280]">Set up your circle in a few simple steps</p>
+          <h1 className="text-3xl font-bold text-[#12284b] font-['Poppins']">Create Savings Stack</h1>
+          <p className="text-[#6b7280]">Set up your stack in a few simple steps</p>
         </div>
 
         <div className="flex items-center gap-2 mb-8">
@@ -1388,7 +1391,7 @@ function CreateCirclePage({ setCurrentPage }: { setCurrentPage: (page: string) =
           <CardContent className="p-6">
             {step === 1 && (
               <div className="space-y-6">
-                <h3 className="text-xl font-semibold text-[#12284b]">Choose Circle Type</h3>
+                <h3 className="text-xl font-semibold text-[#12284b]">Choose Stack Type</h3>
                 <div className="grid sm:grid-cols-2 gap-4">
                   {circleTypes.map((type) => (
                     <button
@@ -1411,8 +1414,8 @@ function CreateCirclePage({ setCurrentPage }: { setCurrentPage: (page: string) =
               <div className="space-y-6">
                 <h3 className="text-xl font-semibold text-[#12284b]">ROSCA Details</h3>
                 <div className="space-y-4">
-                  <div className="space-y-2"><Label>Circle Name</Label><Input placeholder="e.g., Family Savings Circle" /></div>
-                  <div className="space-y-2"><Label>Description</Label><Textarea placeholder="Describe your savings circle" /></div>
+                  <div className="space-y-2"><Label>Stack Name</Label><Input placeholder="e.g., Family Savings Stack" /></div>
+                  <div className="space-y-2"><Label>Description</Label><Textarea placeholder="Describe your savings stack" /></div>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2"><Label>Contribution Amount</Label><div className="relative"><DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6b7280]" /><Input type="number" className="pl-10" placeholder="500" /></div></div>
                     <div className="space-y-2"><Label>Frequency</Label><Select><SelectTrigger><SelectValue placeholder="Select frequency" /></SelectTrigger><SelectContent><SelectItem value="weekly">Weekly</SelectItem><SelectItem value="biweekly">Bi-weekly</SelectItem><SelectItem value="monthly">Monthly</SelectItem></SelectContent></Select></div>
@@ -1486,7 +1489,7 @@ function CreateCirclePage({ setCurrentPage }: { setCurrentPage: (page: string) =
               <div className="space-y-6">
                 <h3 className="text-xl font-semibold text-[#12284b]">Goal Details</h3>
                 <div className="space-y-4">
-                  <div className="space-y-2"><Label>Circle Name</Label><Input placeholder="e.g., Group Vacation Fund" /></div>
+                  <div className="space-y-2"><Label>Stack Name</Label><Input placeholder="e.g., Group Vacation Fund" /></div>
                   <div className="space-y-2"><Label>What are you saving for?</Label><Textarea placeholder="e.g., All-inclusive group trip to Costa Rica" /></div>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2"><Label>Target Amount</Label><div className="relative"><DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6b7280]" /><Input type="number" className="pl-10" placeholder="6000" /></div></div>
@@ -1506,7 +1509,7 @@ function CreateCirclePage({ setCurrentPage }: { setCurrentPage: (page: string) =
                 <div className="space-y-4">
                   <div className="p-4 bg-[#f9fafb] rounded-xl border-2 border-dashed border-gray-300 text-center">
                     <UserPlus className="w-12 h-12 mx-auto mb-3 text-[#6b7280]" />
-                    <p className="text-[#12284b] font-medium mb-1">Add members to your circle</p>
+                    <p className="text-[#12284b] font-medium mb-1">Add members to your stack</p>
                     <p className="text-sm text-[#6b7280] mb-4">Invite via email, phone, or share a link</p>
                     <div className="flex gap-2 max-w-md mx-auto">
                       <Input placeholder="Enter email address" />
@@ -1529,7 +1532,7 @@ function CreateCirclePage({ setCurrentPage }: { setCurrentPage: (page: string) =
                 {step > 1 ? 'Back' : 'Cancel'}
               </Button>
               <Button onClick={() => step < 3 ? setStep(step + 1) : setCurrentPage('circles')} className="bg-[#2467ec]">
-                {step < 3 ? 'Continue' : 'Create Circle'}
+                {step < 3 ? 'Continue' : 'Create Stack'}
               </Button>
             </div>
           </CardContent>
@@ -1554,7 +1557,7 @@ function AddMoneyPage({ setCurrentPage }: { setCurrentPage: (page: string) => vo
         <Card className="border-0 shadow-lg">
           <CardHeader>
             <CardTitle className="text-2xl font-['Poppins']">Add Money</CardTitle>
-            <CardDescription>Fund your savings circle or wallet</CardDescription>
+            <CardDescription>Add funds to your CircleWealth wallet</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="space-y-2">
@@ -1604,18 +1607,16 @@ function AddMoneyPage({ setCurrentPage }: { setCurrentPage: (page: string) => vo
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label>Add to</Label>
-              <Select defaultValue="wallet">
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="wallet">General Wallet</SelectItem>
-                  <SelectItem value="circle1">Family Savings Circle</SelectItem>
-                  <SelectItem value="circle2">Emergency Fund Builders</SelectItem>
-                </SelectContent>
-              </Select>
+            <div className="p-4 bg-[#2467ec]/5 rounded-xl border border-[#2467ec]/20">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-[#2467ec]/10 flex items-center justify-center">
+                  <Wallet className="w-5 h-5 text-[#2467ec]" />
+                </div>
+                <div>
+                  <p className="font-medium text-[#12284b]">Adding to your Wallet</p>
+                  <p className="text-xs text-[#6b7280]">Funds will be available for stack contributions and transfers</p>
+                </div>
+              </div>
             </div>
 
             <Button className="w-full bg-[#2467ec] hover:bg-[#1a5fd4] h-14 text-lg rounded-full">
@@ -1647,19 +1648,19 @@ function getTrustTierInfo(tier: TrustTier) {
 const TRUST_TIERS: TrustTier[] = ['newcomer', 'contributor', 'reliable', 'trusted', 'pillar'];
 
 const TIER_UNLOCKS: Record<TrustTier, string[]> = {
-  newcomer: ['Join savings circles', 'Basic contributions'],
-  contributor: ['Join more circles', 'View community profiles'],
-  reliable: ['Matching fund eligibility', 'Priority circle invites'],
-  trusted: ['Loan access', 'Higher circle limits', 'Create unlimited circles'],
+  newcomer: ['Join savings stacks', 'Basic contributions'],
+  contributor: ['Join more stacks', 'View community profiles'],
+  reliable: ['Matching fund eligibility', 'Priority stack invites'],
+  trusted: ['Loan access', 'Higher stack limits', 'Create unlimited stacks'],
   pillar: ['Maximum matching funds', 'Priority access to new features', 'Community leader badge', 'Mentorship program'],
 };
 
 const TIER_REQUIREMENTS: Record<TrustTier, string[]> = {
   newcomer: ['Create an account'],
-  contributor: ['Join 1+ circle', 'Make your first contribution'],
-  reliable: ['Complete 1-2 circles', '80%+ on-time payments', 'Verified identity'],
-  trusted: ['Complete 3+ circles', '90%+ on-time payments', 'Verified identity'],
-  pillar: ['Complete 5+ circles', '95%+ on-time payments', 'Premium verified identity'],
+  contributor: ['Join 1+ stack', 'Make your first contribution'],
+  reliable: ['Complete 1-2 stacks', '80%+ on-time payments', 'Verified identity'],
+  trusted: ['Complete 3+ stacks', '90%+ on-time payments', 'Verified identity'],
+  pillar: ['Complete 5+ stacks', '95%+ on-time payments', 'Premium verified identity'],
 };
 
 function TrustScorePage({ user }: { user: User }) {
@@ -1767,7 +1768,7 @@ function TrustScorePage({ user }: { user: User }) {
             <Card className="border-0 shadow-lg">
               <CardHeader>
                 <CardTitle className="font-['Poppins']">Trust Activity History</CardTitle>
-                <CardDescription>Completed circles that built your trust</CardDescription>
+                <CardDescription>Completed stacks that built your trust</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
@@ -1816,7 +1817,7 @@ function TrustScorePage({ user }: { user: User }) {
                 <div className="space-y-4">
                   {[
                     { label: 'On-Time Contributions', score: 92, status: 'Excellent' },
-                    { label: 'Circles Completed', score: 40, status: '2 of 5 for next tier' },
+                    { label: 'Stacks Completed', score: 40, status: '2 of 5 for next tier' },
                     { label: 'Savings Consistency', score: 88, status: 'Very Good' },
                     { label: 'Member Reputation', score: 95, status: 'Excellent' },
                     { label: 'Identity Verification', score: 66, status: 'Verified' },
@@ -1853,7 +1854,7 @@ function TrustScorePage({ user }: { user: User }) {
                   </div>
                   <Separator />
                   <div className="flex justify-between text-sm">
-                    <span className="text-[#6b7280]">Circles Completed</span>
+                    <span className="text-[#6b7280]">Stacks Completed</span>
                     <span className="font-medium text-[#12284b]">{user.circlesCompleted}</span>
                   </div>
                   <Separator />
@@ -2034,6 +2035,42 @@ function MatchingFundsPage({ setCurrentPage }: { setCurrentPage: (page: string) 
                     <span className="text-[#6b7280]">Available to claim</span>
                     <span className="text-[#1abc9c] font-medium">$500</span>
                   </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="border-0 shadow-lg">
+              <CardHeader>
+                <CardTitle className="font-['Poppins'] flex items-center gap-2">
+                  <Heart className="w-5 h-5 text-[#e74c3c]" />
+                  Donate to Matching Pool
+                </CardTitle>
+                <CardDescription>Help others reach their savings goals and earn trust points</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label>Donation Amount</Label>
+                    <div className="relative">
+                      <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6b7280]" />
+                      <Input type="number" className="pl-10" placeholder="50" />
+                    </div>
+                    <div className="flex gap-2">
+                      {['25', '50', '100', '250'].map((amt) => (
+                        <button key={amt} className="flex-1 px-3 py-1.5 bg-[#f9fafb] rounded-lg text-xs text-[#12284b] hover:bg-gray-200 transition-colors">${amt}</button>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="p-3 bg-[#f39c12]/5 rounded-lg">
+                    <p className="text-xs text-[#f39c12] font-medium flex items-center gap-1">
+                      <Award className="w-3 h-3" />
+                      Earn 5 trust points per $50 donated
+                    </p>
+                  </div>
+                  <Button className="w-full bg-[#e74c3c] hover:bg-[#c0392b] rounded-full">
+                    <Heart className="w-4 h-4 mr-2" />
+                    Donate Now
+                  </Button>
                 </div>
               </CardContent>
             </Card>
@@ -2375,7 +2412,7 @@ function CircleDetailPage({ circleId, setCurrentPage, setViewingUserId }: { circ
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         <button onClick={() => setCurrentPage('circles')} className="flex items-center gap-2 text-[#6b7280] hover:text-[#12284b] mb-6">
           <ChevronLeft className="w-4 h-4" />
-          Back to My Circles
+          Back to My Stacks
         </button>
 
         {/* Header */}
@@ -2725,7 +2762,7 @@ function WalletPage({ setCurrentPage }: { setCurrentPage: (page: string) => void
             <Card className="border-0 shadow-lg">
               <CardHeader>
                 <CardTitle className="font-['Poppins']">Transaction History</CardTitle>
-                <CardDescription>Your recent deposits, withdrawals, and circle transactions</CardDescription>
+                <CardDescription>Your recent deposits, withdrawals, and stack transactions</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
@@ -2783,7 +2820,7 @@ function WalletPage({ setCurrentPage }: { setCurrentPage: (page: string) => void
                     <span className="font-medium text-[#12284b]">$0</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-[#6b7280]">Circle Contributions</span>
+                    <span className="text-[#6b7280]">Stack Contributions</span>
                     <span className="font-medium text-[#12284b]">$500</span>
                   </div>
                   <div className="flex justify-between">
@@ -3047,7 +3084,7 @@ function PublicProfilePage({ userId, setCurrentPage }: { userId: string; setCurr
           </Card>
           <Card className="border-0 shadow-lg text-center p-4">
             <p className="text-2xl font-bold text-[#f39c12] font-['Poppins']">{publicUser.circlesJoined}</p>
-            <p className="text-sm text-[#6b7280]">Circles Joined</p>
+            <p className="text-sm text-[#6b7280]">Stacks Joined</p>
           </Card>
           <Card className="border-0 shadow-lg text-center p-4">
             <p className="text-2xl font-bold text-[#9b59b6] font-['Poppins']">{publicUser.circlesCompleted}</p>
@@ -3057,8 +3094,8 @@ function PublicProfilePage({ userId, setCurrentPage }: { userId: string; setCurr
 
         <Card className="border-0 shadow-lg">
           <CardHeader>
-            <CardTitle className="font-['Poppins']">Shared Circles</CardTitle>
-            <CardDescription>Circles you both participate in</CardDescription>
+            <CardTitle className="font-['Poppins']">Shared Stacks</CardTitle>
+            <CardDescription>Stacks you both participate in</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
@@ -3079,7 +3116,7 @@ function PublicProfilePage({ userId, setCurrentPage }: { userId: string; setCurr
                 </div>
               ))}
               {MOCK_CIRCLES.filter(c => c.members.some(m => m.userId === userId) && c.members.some(m => m.userId === '1')).length === 0 && (
-                <p className="text-center text-[#6b7280] py-4">No shared circles yet</p>
+                <p className="text-center text-[#6b7280] py-4">No shared stacks yet</p>
               )}
             </div>
           </CardContent>
