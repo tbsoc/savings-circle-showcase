@@ -20,7 +20,7 @@ import {
   CreditCard, PiggyBank, Target, Sparkles, Verified,
   Fingerprint, ScanFace, BadgeCheck, Crown, Trophy,
   Landmark, UserCheck, MapPin, Clock,
-  Globe, Bell, ChevronLeft, Gavel, Timer, Vote, Flame,
+  Globe, Bell, ChevronLeft, Gavel, Timer, Flame,
   HandCoins, AlertTriangle, ThumbsUp, ThumbsDown, Flag,
   Sprout, Download, FileText
 } from 'lucide-react';
@@ -1322,8 +1322,8 @@ function Dashboard({ user, setCurrentPage, navigateToCircle }: { user: User; set
                       </div>
                       <p className="text-sm text-[#6b7280] mb-2">{program.organization}</p>
                       <div className="flex items-center justify-between">
-                        <Badge variant="outline" className="text-[#1abc9c] border-[#1abc9c]">{program.matchRatio} match</Badge>
-                        <span className="text-sm text-[#12284b] font-medium">Up to ${program.maxMatch}</span>
+                        <Badge variant="outline" className="text-[#1abc9c] border-[#1abc9c]">${program.poolAmount.toLocaleString()} pool</Badge>
+                        <span className="text-sm text-[#12284b] font-medium">Est. ${program.estimatedPayout.toLocaleString()}</span>
                       </div>
                     </div>
                   ))}
