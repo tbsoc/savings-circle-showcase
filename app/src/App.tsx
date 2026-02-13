@@ -331,7 +331,7 @@ const MOCK_ACTIVITY_HISTORY: ActivityRecord[] = [
 ];
 
 const MOCK_YIELD_OPPORTUNITIES: YieldOpportunity[] = [
-  { id: '1', name: 'CircleWealth Savings', description: 'Earn yield on your idle savings', apy: 4.5, minDeposit: 100, riskLevel: 'low', lockupPeriod: 'None', provider: 'CircleWealth' },
+  { id: '1', name: 'Stacks Savings', description: 'Earn yield on your idle savings', apy: 4.5, minDeposit: 100, riskLevel: 'low', lockupPeriod: 'None', provider: 'Stacks' },
   { id: '2', name: 'Community Pool', description: 'Higher yields through pooled lending', apy: 7.2, minDeposit: 500, riskLevel: 'medium', lockupPeriod: '30 days', provider: 'CommunityFi' },
   { id: '3', name: 'Growth Fund', description: 'Long-term growth opportunity', apy: 12.5, minDeposit: 1000, riskLevel: 'high', lockupPeriod: '90 days', provider: 'GrowthDAO' },
 ];
@@ -344,7 +344,7 @@ const MOCK_MATCHING_PROGRAMS: MatchingFundProgram[] = [
     description: 'Matching pool for first-time savers completing their initial stack',
     poolAmount: 25000,
     estimatedPayout: 500,
-    eligibilityCriteria: ['First-time CircleWealth user', 'Income below $50,000', 'Complete 3 cycles'],
+    eligibilityCriteria: ['First-time Stacks user', 'Income below $50,000', 'Complete 3 cycles'],
     minContribution: 500,
     minStackDuration: '3 months',
     distributionDate: new Date('2024-06-30'),
@@ -392,7 +392,7 @@ const MOCK_WALLET: Wallet = {
     { id: 'tx2', type: 'deposit', amount: 500, currency: 'USD', status: 'completed', timestamp: new Date('2024-02-01'), description: 'Debit card deposit', txHash: '0x123...456' },
     { id: 'tx3', type: 'contribution', amount: 500, currency: 'CRYPTO', status: 'completed', timestamp: new Date('2024-02-01'), description: 'Family Savings Stack contribution', txHash: '0x789...abc' },
     { id: 'tx4', type: 'payout', amount: 2000, currency: 'CRYPTO', status: 'completed', timestamp: new Date('2024-01-15'), description: 'Family Savings Stack payout', txHash: '0xdef...123' },
-    { id: 'tx5', type: 'yield', amount: 12.50, currency: 'CRYPTO', status: 'completed', timestamp: new Date('2024-02-10'), description: 'Yield from CircleWealth Savings', txHash: '0x456...789' },
+    { id: 'tx5', type: 'yield', amount: 12.50, currency: 'CRYPTO', status: 'completed', timestamp: new Date('2024-02-10'), description: 'Yield from Stacks Savings', txHash: '0x456...789' },
     { id: 'tx6', type: 'deposit', amount: 1000, currency: 'USD', status: 'pending', timestamp: new Date(), description: 'Bank transfer processing', txHash: undefined },
   ],
 };
@@ -456,6 +456,7 @@ const MOCK_PUBLIC_USERS: PublicUser[] = [
 function Navigation({ currentPage, setCurrentPage, user }: { currentPage: string; setCurrentPage: (page: string) => void; user?: User }) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 50);
@@ -484,7 +485,7 @@ function Navigation({ currentPage, setCurrentPage, user }: { currentPage: string
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#2467ec] to-[#1abc9c] flex items-center justify-center transform group-hover:scale-105 transition-transform">
               <Users className="w-5 h-5 text-white" />
             </div>
-            <span className="text-xl font-bold text-[#12284b] font-['Poppins']">CircleWealth</span>
+            <span className="text-xl font-bold text-[#12284b] font-['Poppins']">Stacks</span>
           </button>
 
           <div className="hidden lg:flex items-center gap-8">
@@ -503,10 +504,43 @@ function Navigation({ currentPage, setCurrentPage, user }: { currentPage: string
           <div className="hidden lg:flex items-center gap-4">
             {user ? (
               <div className="flex items-center gap-4">
-                <button onClick={() => setCurrentPage('notifications')} className="relative p-2 text-[#6b7280] hover:text-[#12284b] transition-colors">
-                  <Bell className="w-5 h-5" />
-                  <span className="absolute top-1 right-1 w-2 h-2 bg-[#e74c3c] rounded-full" />
-                </button>
+                <div className="relative">
+                  <button onClick={() => setShowNotifications(!showNotifications)} className="relative p-2 text-[#6b7280] hover:text-[#12284b] transition-colors">
+                    <Bell className="w-5 h-5" />
+                    <span className="absolute top-1 right-1 w-2 h-2 bg-[#e74c3c] rounded-full" />
+                  </button>
+                  {showNotifications && (
+                    <div className="absolute right-0 top-12 w-80 bg-white rounded-xl shadow-2xl border border-gray-100 z-50 overflow-hidden">
+                      <div className="p-4 border-b border-gray-100">
+                        <h3 className="font-semibold text-[#12284b]">Notifications</h3>
+                      </div>
+                      <div className="max-h-80 overflow-y-auto">
+                        {[
+                          { icon: '\u{1F4B0}', title: 'Upcoming deposit due', desc: 'Family Savings Stack — $500 due in 3 days', time: '2h ago', unread: true },
+                          { icon: '\u{1F389}', title: 'Payout incoming!', desc: 'Community Chit Fund — auction closes tomorrow', time: '5h ago', unread: true },
+                          { icon: '\u{1F4E2}', title: 'New matching fund available', desc: 'Youth Savings Initiative is now accepting applications', time: '1d ago', unread: true },
+                          { icon: '\u2B50', title: 'Trust level progress', desc: 'You\'re 72% of the way to Pillar tier!', time: '2d ago', unread: false },
+                          { icon: '\u{1F44B}', title: 'New member joined', desc: 'Jordan Lee joined Group Vacation Fund', time: '3d ago', unread: false },
+                          { icon: '\u{1F4CA}', title: 'Weekly savings summary', desc: 'You saved $600 this week across 3 stacks', time: '5d ago', unread: false },
+                        ].map((notif, i) => (
+                          <div key={i} className={`p-4 border-b border-gray-50 hover:bg-gray-50 cursor-pointer ${notif.unread ? 'bg-[#2467ec]/5' : ''}`}>
+                            <div className="flex items-start gap-3">
+                              <span className="text-lg flex-shrink-0">{notif.icon}</span>
+                              <div className="flex-1 min-w-0">
+                                <p className={`text-sm ${notif.unread ? 'font-semibold text-[#12284b]' : 'font-medium text-[#6b7280]'}`}>{notif.title}</p>
+                                <p className="text-xs text-[#6b7280] truncate">{notif.desc}</p>
+                              </div>
+                              <span className="text-xs text-[#6b7280] flex-shrink-0">{notif.time}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="p-3 border-t border-gray-100 text-center">
+                        <button className="text-sm text-[#2467ec] font-medium hover:underline">View all notifications</button>
+                      </div>
+                    </div>
+                  )}
+                </div>
                 <button onClick={() => setCurrentPage('profile')} className="flex items-center gap-3 hover:bg-gray-50 rounded-full pr-4 pl-1 py-1 transition-colors">
                   <Avatar className="w-8 h-8 border-2 border-[#2467ec]">
                     <AvatarImage src={user.avatar} />
@@ -516,7 +550,8 @@ function Navigation({ currentPage, setCurrentPage, user }: { currentPage: string
                   </Avatar>
                   <div className="text-left">
                     <span className="text-sm font-medium text-[#12284b] block">{user.name.split(' ')[0]}</span>
-                    <span className="text-xs text-[#1abc9c] font-medium">$3,923.50</span>
+                    <span className="text-xs text-[#1abc9c] font-medium">$3,923 </span>
+                    <span className="text-xs text-[#6b7280]">· $2,500 cash</span>
                   </div>
                 </button>
               </div>
@@ -737,7 +772,7 @@ function LandingPage({ setCurrentPage }: { setCurrentPage: (page: string) => voi
             <div className="space-y-6">
               <h2 className="text-3xl lg:text-4xl font-bold text-[#12284b] font-['Poppins']">Building Financial Communities</h2>
               <p className="text-[#6b7280] leading-relaxed text-lg">
-                CircleWealth was founded on a simple belief: when people come together to support each other's 
+                Stacks was founded on a simple belief: when people come together to support each other's 
                 financial goals, everyone wins. We've taken the time-honored tradition of community savings 
                 stacks and brought it into the digital age.
               </p>
@@ -774,8 +809,8 @@ function LandingPage({ setCurrentPage }: { setCurrentPage: (page: string) => voi
           
           <div className="grid md:grid-cols-3 gap-8">
             {[
-              { name: 'Sarah M.', role: 'Teacher, Saved $12,000', avatar: '/avatar-sarah.jpg', quote: 'CircleWealth helped me save for my daughter\'s college fund in a way that kept me accountable. The community aspect made all the difference.', rating: 5 },
-              { name: 'Marcus T.', role: 'Small Business Owner', avatar: '/avatar-marcus.jpg', quote: 'I\'ve been part of savings stacks before, but the transparency and ease of CircleWealth is unmatched. Highly recommend!', rating: 5 },
+              { name: 'Sarah M.', role: 'Teacher, Saved $12,000', avatar: '/avatar-sarah.jpg', quote: 'Stacks helped me save for my daughter\'s college fund in a way that kept me accountable. The community aspect made all the difference.', rating: 5 },
+              { name: 'Marcus T.', role: 'Small Business Owner', avatar: '/avatar-marcus.jpg', quote: 'I\'ve been part of savings stacks before, but the transparency and ease of Stacks is unmatched. Highly recommend!', rating: 5 },
               { name: 'Elena R.', role: 'Healthcare Worker', avatar: '/avatar-elena.jpg', quote: 'The matched savings program helped me reach my emergency fund goal twice as fast. This platform truly cares about its users.', rating: 5 },
             ].map((testimonial, i) => (
               <Card key={i} className="border-0 shadow-lg hover:shadow-xl transition-all">
@@ -841,7 +876,7 @@ function LandingPage({ setCurrentPage }: { setCurrentPage: (page: string) => voi
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#2467ec] to-[#1abc9c] flex items-center justify-center">
                   <Users className="w-5 h-5 text-white" />
                 </div>
-                <span className="text-xl font-bold font-['Poppins']">CircleWealth</span>
+                <span className="text-xl font-bold font-['Poppins']">Stacks</span>
               </div>
               <p className="text-gray-400 mb-6 max-w-sm">
                 Empowering communities to save together and build stronger financial futures.
@@ -878,7 +913,7 @@ function LandingPage({ setCurrentPage }: { setCurrentPage: (page: string) => voi
           <Separator className="bg-white/10 mb-8" />
           
           <div className="flex flex-wrap justify-between items-center gap-4">
-            <p className="text-gray-400 text-sm">© 2024 CircleWealth. All rights reserved.</p>
+            <p className="text-gray-400 text-sm">© 2024 Stacks. All rights reserved.</p>
             <div className="flex gap-6">
               {['Privacy Policy', 'Terms of Service', 'Cookie Policy'].map((link, i) => (
                 <button key={i} onClick={() => setCurrentPage(link.toLowerCase().replace(/\s+/g, '-'))} className="text-gray-400 hover:text-white transition-colors text-sm">
@@ -1575,7 +1610,7 @@ function AddMoneyPage({ setCurrentPage }: { setCurrentPage: (page: string) => vo
         <Card className="border-0 shadow-lg">
           <CardHeader>
             <CardTitle className="text-2xl font-['Poppins']">Add Money</CardTitle>
-            <CardDescription>Add funds to your CircleWealth wallet</CardDescription>
+            <CardDescription>Add funds to your Stacks wallet</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="space-y-2">
@@ -1603,9 +1638,10 @@ function AddMoneyPage({ setCurrentPage }: { setCurrentPage: (page: string) => vo
               <Label>Payment Method</Label>
               <div className="space-y-2">
                 {[
-                  { id: 'card', name: 'Credit/Debit Card', icon: CreditCard, last4: '•••• 4242' },
-                  { id: 'bank', name: 'Bank Account', icon: Landmark, last4: '•••• 1234' },
-                  { id: 'apple', name: 'Apple Pay', icon: Wallet, last4: '' },
+                  { id: 'card', name: 'Credit/Debit Card', icon: CreditCard, last4: '•••• 4242', desc: '' },
+                  { id: 'bank', name: 'Bank Account', icon: Landmark, last4: '•••• 1234', desc: '' },
+                  { id: 'apple', name: 'Apple Pay', icon: Wallet, last4: '', desc: '' },
+                  { id: 'crypto', name: 'Cryptocurrency', icon: Globe, last4: '', desc: 'USDC, USDT, ETH, BTC' },
                 ].map((m) => (
                   <button
                     key={m.id}
@@ -1618,6 +1654,7 @@ function AddMoneyPage({ setCurrentPage }: { setCurrentPage: (page: string) => vo
                     <div className="flex-1 text-left">
                       <p className="font-medium text-[#12284b]">{m.name}</p>
                       {m.last4 && <p className="text-sm text-[#6b7280]">{m.last4}</p>}
+                      {m.desc && <p className="text-xs text-[#6b7280]">{m.desc}</p>}
                     </div>
                     {method === m.id && <CheckCircle className="w-5 h-5 text-[#2467ec]" />}
                   </button>
@@ -1962,7 +1999,7 @@ function YieldPage() {
           <CardContent>
             <div className="grid md:grid-cols-3 gap-6">
               {[
-                { icon: PiggyBank, title: 'Deposit Funds', desc: 'Add money to your CircleWealth wallet or directly to yield products' },
+                { icon: PiggyBank, title: 'Deposit Funds', desc: 'Add money to your Stacks wallet or directly to yield products' },
                 { icon: TrendingUp, title: 'Earn Daily', desc: 'Interest accrues daily and compounds automatically' },
                 { icon: Wallet, title: 'Withdraw Anytime', desc: 'Access your funds when you need them (terms vary by product)' },
               ].map((step, i) => (
