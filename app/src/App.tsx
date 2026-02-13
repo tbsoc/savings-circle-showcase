@@ -64,9 +64,11 @@ type SavingsCircle = {
   totalCycles: number;
   currentCycle: number;
   totalPot: number;
-  status: 'pending' | 'active' | 'completed';
+  status: 'pending' | 'active' | 'completed' | 'decommissioned';
   createdAt: Date;
   nextPayoutDate?: Date;
+  nextPaymentDue?: Date;
+  autoDeposit?: boolean;
   matchingFundEligible: boolean;
   matchingFundAmount?: number;
   potValue?: number;
@@ -184,8 +186,8 @@ const MOCK_USER: User = {
   trustTier: 'trusted',
   trustProgress: 72,
   totalSaved: 12500,
-  circlesJoined: 5,
-  circlesCompleted: 2,
+  circlesJoined: 8,
+  circlesCompleted: 3,
   verificationLevel: 'verified',
 };
 
@@ -211,6 +213,8 @@ const MOCK_CIRCLES: SavingsCircle[] = [
     nextPayoutDate: new Date('2024-03-01'),
     matchingFundEligible: true,
     matchingFundAmount: 500,
+    nextPaymentDue: new Date('2024-03-01'),
+    autoDeposit: true,
   },
   {
     id: '2',
@@ -241,6 +245,8 @@ const MOCK_CIRCLES: SavingsCircle[] = [
       { cycle: 1, winnerId: '9', winnerName: 'Arun Kumar', discount: 18, netPayout: 4100, date: new Date('2024-02-15') },
       { cycle: 2, winnerId: '6', winnerName: 'Sarah Smith', discount: 15, netPayout: 4250, date: new Date('2024-03-15') },
     ],
+    nextPaymentDue: new Date('2024-04-15'),
+    autoDeposit: false,
   },
   {
     id: '3',
@@ -270,6 +276,8 @@ const MOCK_CIRCLES: SavingsCircle[] = [
       { userId: '10', name: 'Olivia Davis', amountSaved: 750, streak: 5 },
       { userId: '3', name: 'Mike Brown', amountSaved: 700, streak: 4 },
     ],
+    nextPaymentDue: new Date('2024-04-22'),
+    autoDeposit: true,
   },
   {
     id: '4',
@@ -298,6 +306,8 @@ const MOCK_CIRCLES: SavingsCircle[] = [
       { id: 'wr1', userId: '5', userName: 'Lisa Chen', amount: 1500, reason: 'Unexpected car repair', status: 'approved', votesFor: 2, votesAgainst: 0, date: new Date('2024-03-10') },
       { id: 'wr2', userId: '6', userName: 'David Park', amount: 800, reason: 'Medical co-pay', status: 'pending', votesFor: 1, votesAgainst: 0, date: new Date('2024-04-01') },
     ],
+    nextPaymentDue: new Date('2024-04-08'),
+    autoDeposit: true,
   },
   {
     id: '5',
@@ -321,6 +331,76 @@ const MOCK_CIRCLES: SavingsCircle[] = [
     targetAmount: 6000,
     currentAmount: 1800,
     targetDate: new Date('2024-12-01'),
+    nextPaymentDue: new Date('2024-04-15'),
+    autoDeposit: false,
+  },
+  // 6. Completed ROSCA
+  {
+    id: '6',
+    name: 'Holiday Savings 2023',
+    type: 'rosca',
+    description: 'Completed holiday savings stack',
+    members: [
+      { id: '20', userId: '1', name: 'Alex Johnson', position: 1, hasReceivedPayout: true, payoutAmount: 1500, joinedAt: new Date('2023-06-01') },
+      { id: '21', userId: '2', name: 'Sarah Smith', position: 2, hasReceivedPayout: true, payoutAmount: 1500, joinedAt: new Date('2023-06-01') },
+      { id: '22', userId: '3', name: 'Mike Brown', position: 3, hasReceivedPayout: true, payoutAmount: 1500, joinedAt: new Date('2023-06-01') },
+    ],
+    contributionAmount: 250,
+    frequency: 'monthly',
+    totalCycles: 3,
+    currentCycle: 3,
+    totalPot: 750,
+    status: 'completed',
+    createdAt: new Date('2023-06-01'),
+    matchingFundEligible: false,
+    autoDeposit: true,
+  },
+  // 7. Pending savings challenge
+  {
+    id: '7',
+    name: 'New Year Savings Challenge',
+    type: 'savings_challenge',
+    description: 'Starting in January — race to save $1,500',
+    members: [
+      { id: '23', userId: '1', name: 'Alex Johnson', position: 1, hasReceivedPayout: false, joinedAt: new Date('2024-12-15') },
+      { id: '24', userId: '10', name: 'Olivia Davis', position: 2, hasReceivedPayout: false, joinedAt: new Date('2024-12-16') },
+    ],
+    contributionAmount: 75,
+    frequency: 'weekly',
+    totalCycles: 20,
+    currentCycle: 0,
+    totalPot: 0,
+    status: 'pending',
+    createdAt: new Date('2024-12-15'),
+    matchingFundEligible: true,
+    matchingFundAmount: 150,
+    savingsGoalPerMember: 1500,
+    challengeEndDate: new Date('2025-05-15'),
+    autoDeposit: false,
+  },
+  // 8. Decommissioned — failed to complete
+  {
+    id: '8',
+    name: 'Neighborhood Fund',
+    type: 'emergency_fund',
+    description: 'Decommissioned — not enough members joined',
+    members: [
+      { id: '25', userId: '1', name: 'Alex Johnson', position: 1, hasReceivedPayout: false, joinedAt: new Date('2023-09-01') },
+      { id: '26', userId: '6', name: 'David Park', position: 2, hasReceivedPayout: false, joinedAt: new Date('2023-09-01') },
+    ],
+    contributionAmount: 200,
+    frequency: 'monthly',
+    totalCycles: 12,
+    currentCycle: 3,
+    totalPot: 1200,
+    status: 'decommissioned',
+    createdAt: new Date('2023-09-01'),
+    matchingFundEligible: false,
+    targetFundSize: 8000,
+    currentFundBalance: 1200,
+    maxWithdrawal: 500,
+    approvalMethod: 'majority_vote',
+    autoDeposit: false,
   },
 ];
 
@@ -1179,6 +1259,12 @@ function Dashboard({ user, setCurrentPage, navigateToCircle }: { user: User; set
                           </div>
                         </div>
                         <p className={`text-sm font-medium mt-2 ${typeInfo.text}`}>{getCircleTypeDetail(circle)}</p>
+                        {circle.nextPaymentDue && circle.status === 'active' && (
+                          <div className="flex items-center gap-2 mt-1">
+                            <Clock className="w-3 h-3 text-[#f39c12]" />
+                            <span className="text-xs text-[#f39c12] font-medium">Next payment: {circle.nextPaymentDue.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+                          </div>
+                        )}
                         <div className="mt-2">
                           <div className="flex justify-between text-sm mb-1">
                             <span className="text-[#6b7280]">Progress</span>
@@ -1289,7 +1375,7 @@ function Dashboard({ user, setCurrentPage, navigateToCircle }: { user: User; set
 }
 
 function CirclesPage({ setCurrentPage, navigateToCircle }: { setCurrentPage: (page: string) => void; navigateToCircle: (id: string) => void }) {
-  const [filter, setFilter] = useState<'all' | 'active' | 'completed' | 'pending'>('all');
+  const [filter, setFilter] = useState<'all' | 'active' | 'completed' | 'pending' | 'decommissioned'>('all');
 
   const filteredCircles = MOCK_CIRCLES.filter(c => filter === 'all' || c.status === filter);
 
@@ -1308,7 +1394,7 @@ function CirclesPage({ setCurrentPage, navigateToCircle }: { setCurrentPage: (pa
         </div>
 
         <div className="flex gap-2 mb-6">
-          {(['all', 'active', 'pending', 'completed'] as const).map((f) => (
+          {(['all', 'active', 'pending', 'completed', 'decommissioned'] as const).map((f) => (
             <button
               key={f}
               onClick={() => setFilter(f)}
@@ -2753,6 +2839,33 @@ function CircleDetailPage({ circleId, setCurrentPage, setViewingUserId }: { circ
           </CardContent>
         </Card>
 
+        {/* Auto-Deposit Toggle */}
+        {circle.status === 'active' && (
+          <Card className="border-0 shadow-lg mb-6">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-[#2467ec]/10 flex items-center justify-center">
+                    <Settings className="w-5 h-5 text-[#2467ec]" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-[#12284b]">Automatic Deposits</p>
+                    <p className="text-xs text-[#6b7280]">Automatically contribute from your wallet each cycle</p>
+                  </div>
+                </div>
+                <button className={`w-12 h-6 rounded-full transition-colors relative ${circle.autoDeposit ? 'bg-[#2467ec]' : 'bg-gray-300'}`}>
+                  <span className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform ${circle.autoDeposit ? 'translate-x-6' : 'translate-x-0.5'}`} />
+                </button>
+              </div>
+              {circle.autoDeposit && (
+                <div className="mt-3 p-2 bg-[#1abc9c]/5 rounded-lg">
+                  <p className="text-xs text-[#1abc9c] font-medium">Next auto-deposit: ${circle.contributionAmount} on {circle.nextPaymentDue?.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) ?? 'TBD'}</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
         {/* Actions */}
         <div className="flex flex-wrap gap-4">
           {circle.type === 'emergency_fund' ? (
@@ -3018,6 +3131,7 @@ function DepositPage({ setCurrentPage }: { setCurrentPage: (page: string) => voi
                       { id: 'card', name: 'Credit/Debit Card', icon: CreditCard, last4: '•••• 4242', instant: true },
                       { id: 'bank', name: 'Bank Account (ACH)', icon: Landmark, last4: '•••• 1234', instant: false },
                       { id: 'wire', name: 'Wire Transfer', icon: Globe, last4: '', instant: false },
+                      { id: 'crypto', name: 'Cryptocurrency', icon: Wallet, last4: 'USDC, USDT, ETH, BTC', instant: true },
                     ].map((m) => (
                       <button
                         key={m.id}
