@@ -21,16 +21,20 @@ import {
   Fingerprint, ScanFace, BadgeCheck, Crown, Trophy,
   Landmark, UserCheck, MapPin, Clock,
   Globe, Bell, ChevronLeft, Gavel, Timer, Vote, Flame,
-  HandCoins, AlertTriangle, ThumbsUp, ThumbsDown, Flag
+  HandCoins, AlertTriangle, ThumbsUp, ThumbsDown, Flag,
+  Sprout, Download, FileText
 } from 'lucide-react';
 
 // Types
+type TrustTier = 'newcomer' | 'contributor' | 'reliable' | 'trusted' | 'pillar';
+
 type User = {
   id: string;
   name: string;
   email: string;
   avatar?: string;
-  creditScore: number;
+  trustTier: TrustTier;
+  trustProgress: number;
   totalSaved: number;
   circlesJoined: number;
   circlesCompleted: number;
@@ -95,14 +99,15 @@ type CircleMember = {
   joinedAt: Date;
 };
 
-type CreditRecord = {
+type ActivityRecord = {
   id: string;
   circleName: string;
+  circleType: CircleType;
   contributionAmount: number;
   totalContributions: number;
   completedAt: Date;
   onTimePercentage: number;
-  creditScoreImpact: number;
+  trustPoints: number;
 };
 
 type YieldOpportunity = {
@@ -157,7 +162,7 @@ type PublicUser = {
   id: string;
   name: string;
   avatar?: string;
-  creditScore: number;
+  trustTier: TrustTier;
   circlesJoined: number;
   circlesCompleted: number;
   verificationLevel: 'basic' | 'verified' | 'premium';
@@ -173,7 +178,8 @@ const MOCK_USER: User = {
   id: '1',
   name: 'Alex Johnson',
   email: 'alex@example.com',
-  creditScore: 785,
+  trustTier: 'trusted',
+  trustProgress: 72,
   totalSaved: 12500,
   circlesJoined: 5,
   circlesCompleted: 2,
@@ -315,9 +321,10 @@ const MOCK_CIRCLES: SavingsCircle[] = [
   },
 ];
 
-const MOCK_CREDIT_HISTORY: CreditRecord[] = [
-  { id: '1', circleName: 'Holiday Savings 2023', contributionAmount: 250, totalContributions: 1500, completedAt: new Date('2023-12-15'), onTimePercentage: 100, creditScoreImpact: 25 },
-  { id: '2', circleName: 'Summer Vacation Fund', contributionAmount: 400, totalContributions: 2400, completedAt: new Date('2023-08-20'), onTimePercentage: 95, creditScoreImpact: 20 },
+const MOCK_ACTIVITY_HISTORY: ActivityRecord[] = [
+  { id: '1', circleName: 'Holiday Savings 2023', circleType: 'rosca', contributionAmount: 250, totalContributions: 1500, completedAt: new Date('2023-12-15'), onTimePercentage: 100, trustPoints: 25 },
+  { id: '2', circleName: 'Summer Vacation Fund', circleType: 'goal_based', contributionAmount: 400, totalContributions: 2400, completedAt: new Date('2023-08-20'), onTimePercentage: 95, trustPoints: 20 },
+  { id: '3', circleName: 'Community Emergency Pool', circleType: 'emergency_fund', contributionAmount: 300, totalContributions: 1800, completedAt: new Date('2023-05-10'), onTimePercentage: 92, trustPoints: 18 },
 ];
 
 const MOCK_YIELD_OPPORTUNITIES: YieldOpportunity[] = [
@@ -382,7 +389,7 @@ const MOCK_PUBLIC_USERS: PublicUser[] = [
   {
     id: '2',
     name: 'Sarah Smith',
-    creditScore: 820,
+    trustTier: 'pillar' as TrustTier,
     circlesJoined: 6,
     circlesCompleted: 4,
     verificationLevel: 'premium',
@@ -395,7 +402,7 @@ const MOCK_PUBLIC_USERS: PublicUser[] = [
   {
     id: '3',
     name: 'Mike Brown',
-    creditScore: 745,
+    trustTier: 'reliable' as TrustTier,
     circlesJoined: 3,
     circlesCompleted: 2,
     verificationLevel: 'verified',
@@ -408,7 +415,7 @@ const MOCK_PUBLIC_USERS: PublicUser[] = [
   {
     id: '4',
     name: 'Emma Wilson',
-    creditScore: 910,
+    trustTier: 'pillar' as TrustTier,
     circlesJoined: 8,
     circlesCompleted: 6,
     verificationLevel: 'premium',
@@ -421,7 +428,7 @@ const MOCK_PUBLIC_USERS: PublicUser[] = [
   {
     id: '5',
     name: 'Lisa Chen',
-    creditScore: 780,
+    trustTier: 'contributor' as TrustTier,
     circlesJoined: 4,
     circlesCompleted: 1,
     verificationLevel: 'verified',
@@ -448,7 +455,7 @@ function Navigation({ currentPage, setCurrentPage, user }: { currentPage: string
     { label: 'Dashboard', page: 'dashboard' },
     { label: 'Wallet', page: 'wallet' },
     { label: 'My Circles', page: 'circles' },
-    { label: 'Credit', page: 'credit' },
+    { label: 'Trust Score', page: 'credit' },
     { label: 'Yield', page: 'yield' },
     { label: 'Matching Funds', page: 'matching' },
   ] : [
@@ -1039,7 +1046,7 @@ function Dashboard({ user, setCurrentPage, navigateToCircle }: { user: User; set
   const stats = [
     { label: 'Total Saved', value: `$${user.totalSaved.toLocaleString()}`, icon: PiggyBank, change: '+12%', color: 'from-[#2467ec] to-[#1a5fd4]' },
     { label: 'Active Circles', value: user.circlesJoined.toString(), icon: Users, change: '+2', color: 'from-[#1abc9c] to-[#16a085]' },
-    { label: 'Credit Score', value: user.creditScore.toString(), icon: TrendingUp, change: '+25', color: 'from-[#f39c12] to-[#e67e22]' },
+    { label: 'Trust Level', value: user.trustTier.charAt(0).toUpperCase() + user.trustTier.slice(1), icon: Award, change: `${user.trustProgress}% to next`, color: 'from-[#f39c12] to-[#e67e22]' },
     { label: 'Next Payout', value: '$2,000', icon: Calendar, change: 'In 5 days', color: 'from-[#9b59b6] to-[#8e44ad]' },
   ];
 
@@ -1200,7 +1207,7 @@ function Dashboard({ user, setCurrentPage, navigateToCircle }: { user: User; set
                   {[
                     { icon: Plus, label: 'Add Money', action: () => setCurrentPage('add-money') },
                     { icon: UserPlus, label: 'Invite Friend', action: () => setCurrentPage('invite') },
-                    { icon: Landmark, label: 'Credit Report', action: () => setCurrentPage('credit') },
+                    { icon: Award, label: 'Trust Score', action: () => setCurrentPage('credit') },
                     { icon: Settings, label: 'Settings', action: () => setCurrentPage('settings') },
                   ].map((action, i) => (
                     <button key={i} onClick={action.action} className="p-4 bg-[#f9fafb] rounded-xl hover:bg-gray-100 transition-colors text-center">
@@ -1626,85 +1633,193 @@ function AddMoneyPage({ setCurrentPage }: { setCurrentPage: (page: string) => vo
   );
 }
 
-function CreditPage({ user }: { user: User }) {
+// Trust tier display info helper
+function getTrustTierInfo(tier: TrustTier) {
+  switch (tier) {
+    case 'newcomer': return { icon: Sprout, label: 'Newcomer', color: 'text-[#6b7280]', bg: 'bg-[#6b7280]/10', gradient: 'from-[#6b7280] to-[#4b5563]', description: 'Just getting started', rank: 1 };
+    case 'contributor': return { icon: HandCoins, label: 'Contributor', color: 'text-[#2467ec]', bg: 'bg-[#2467ec]/10', gradient: 'from-[#2467ec] to-[#1a5fd4]', description: 'Active participant', rank: 2 };
+    case 'reliable': return { icon: Shield, label: 'Reliable', color: 'text-[#1abc9c]', bg: 'bg-[#1abc9c]/10', gradient: 'from-[#1abc9c] to-[#16a085]', description: 'Proven track record', rank: 3 };
+    case 'trusted': return { icon: Award, label: 'Trusted', color: 'text-[#f39c12]', bg: 'bg-[#f39c12]/10', gradient: 'from-[#f39c12] to-[#e67e22]', description: 'Established member', rank: 4 };
+    case 'pillar': return { icon: Crown, label: 'Pillar', color: 'text-[#9b59b6]', bg: 'bg-[#9b59b6]/10', gradient: 'from-[#9b59b6] to-[#8e44ad]', description: 'Community leader', rank: 5 };
+  }
+}
+
+const TRUST_TIERS: TrustTier[] = ['newcomer', 'contributor', 'reliable', 'trusted', 'pillar'];
+
+const TIER_UNLOCKS: Record<TrustTier, string[]> = {
+  newcomer: ['Join savings circles', 'Basic contributions'],
+  contributor: ['Join more circles', 'View community profiles'],
+  reliable: ['Matching fund eligibility', 'Priority circle invites'],
+  trusted: ['Loan access', 'Higher circle limits', 'Create unlimited circles'],
+  pillar: ['Maximum matching funds', 'Priority access to new features', 'Community leader badge', 'Mentorship program'],
+};
+
+const TIER_REQUIREMENTS: Record<TrustTier, string[]> = {
+  newcomer: ['Create an account'],
+  contributor: ['Join 1+ circle', 'Make your first contribution'],
+  reliable: ['Complete 1-2 circles', '80%+ on-time payments', 'Verified identity'],
+  trusted: ['Complete 3+ circles', '90%+ on-time payments', 'Verified identity'],
+  pillar: ['Complete 5+ circles', '95%+ on-time payments', 'Premium verified identity'],
+};
+
+function TrustScorePage({ user }: { user: User }) {
+  const currentTierInfo = getTrustTierInfo(user.trustTier);
+  const CurrentTierIcon = currentTierInfo.icon;
+  const currentRank = currentTierInfo.rank;
+  const nextTier = currentRank < 5 ? TRUST_TIERS[currentRank] : null;
+  const nextTierInfo = nextTier ? getTrustTierInfo(nextTier) : null;
+
   return (
     <div className="min-h-screen bg-[#f9fafb] pt-24 pb-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-[#12284b] font-['Poppins']">Credit History</h1>
-          <p className="text-[#6b7280]">Build credit through consistent savings</p>
+          <h1 className="text-3xl font-bold text-[#12284b] font-['Poppins']">Trust Score</h1>
+          <p className="text-[#6b7280]">Build trust through consistent participation and cooperation</p>
         </div>
 
         <div className="grid lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-6">
+            {/* Current Trust Tier */}
             <Card className="border-0 shadow-lg">
               <CardContent className="p-8">
                 <div className="flex items-center justify-between mb-6">
                   <div>
-                    <p className="text-[#6b7280] mb-1">Your Credit Score</p>
-                    <p className="text-5xl font-bold text-[#12284b] font-['Poppins']">{user.creditScore}</p>
+                    <p className="text-[#6b7280] mb-1">Your Trust Level</p>
+                    <p className={`text-4xl font-bold font-['Poppins'] ${currentTierInfo.color}`}>{currentTierInfo.label}</p>
+                    <p className="text-sm text-[#6b7280] mt-1">{currentTierInfo.description}</p>
                   </div>
-                  <div className="w-24 h-24 rounded-full bg-gradient-to-br from-[#1abc9c] to-[#16a085] flex items-center justify-center">
-                    <TrendingUp className="w-10 h-10 text-white" />
+                  <div className={`w-24 h-24 rounded-full bg-gradient-to-br ${currentTierInfo.gradient} flex items-center justify-center`}>
+                    <CurrentTierIcon className="w-10 h-10 text-white" />
                   </div>
                 </div>
-                <div className="flex items-center gap-2 mb-4">
-                  <Badge className="bg-[#1abc9c]/10 text-[#1abc9c]">Excellent</Badge>
-                  <span className="text-sm text-[#6b7280]">+25 points this year</span>
-                </div>
-                <Progress value={user.creditScore / 10} className="h-3" />
-                <div className="flex justify-between text-sm text-[#6b7280] mt-2">
-                  <span>300</span>
-                  <span>850</span>
+                {nextTierInfo && (
+                  <div>
+                    <div className="flex items-center justify-between text-sm mb-2">
+                      <span className="text-[#6b7280]">Progress to <span className={`font-medium ${nextTierInfo.color}`}>{nextTierInfo.label}</span></span>
+                      <span className="font-medium text-[#12284b]">{user.trustProgress}%</span>
+                    </div>
+                    <Progress value={user.trustProgress} className="h-3" />
+                    <p className="text-xs text-[#6b7280] mt-2">Complete {5 - user.circlesCompleted} more circles and upgrade to premium verification to advance</p>
+                  </div>
+                )}
+                {!nextTierInfo && (
+                  <div className="p-3 bg-[#9b59b6]/10 rounded-lg">
+                    <p className="text-sm font-medium text-[#9b59b6]">You've reached the highest trust tier. You're a community pillar!</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Tier Progression Ladder */}
+            <Card className="border-0 shadow-lg">
+              <CardHeader>
+                <CardTitle className="font-['Poppins']">Trust Tier Progression</CardTitle>
+                <CardDescription>Your journey through the trust tiers</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {TRUST_TIERS.map((tier) => {
+                    const info = getTrustTierInfo(tier);
+                    const TierIcon = info.icon;
+                    const isCompleted = info.rank < currentRank;
+                    const isCurrent = tier === user.trustTier;
+                    const isLocked = info.rank > currentRank;
+                    return (
+                      <div key={tier} className={`p-4 rounded-xl border-2 ${isCurrent ? `border-2 ${info.bg} ring-2 ring-offset-2` : isCompleted ? 'border-[#1abc9c]/30 bg-[#1abc9c]/5' : 'border-gray-200 bg-gray-50'}`} style={isCurrent ? { borderColor: 'currentColor' } : {}}>
+                        <div className="flex items-center gap-4">
+                          <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${isLocked ? 'bg-gray-200' : `bg-gradient-to-br ${info.gradient}`}`}>
+                            {isLocked ? <Lock className="w-5 h-5 text-[#6b7280]" /> : <TierIcon className="w-6 h-6 text-white" />}
+                          </div>
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2">
+                              <h4 className={`font-semibold ${isLocked ? 'text-[#6b7280]' : 'text-[#12284b]'}`}>{info.label}</h4>
+                              {isCompleted && <CheckCircle className="w-4 h-4 text-[#1abc9c]" />}
+                              {isCurrent && <Badge className={`${info.bg} ${info.color} text-xs`}>Current</Badge>}
+                            </div>
+                            <p className={`text-sm ${isLocked ? 'text-[#6b7280]' : 'text-[#6b7280]'}`}>{info.description}</p>
+                          </div>
+                          <div className="text-right flex-shrink-0">
+                            {!isLocked && (
+                              <div className="flex flex-wrap gap-1 justify-end">
+                                {TIER_UNLOCKS[tier].slice(0, 2).map((unlock, i) => (
+                                  <Badge key={i} variant="outline" className="text-xs">{unlock}</Badge>
+                                ))}
+                                {TIER_UNLOCKS[tier].length > 2 && <Badge variant="outline" className="text-xs">+{TIER_UNLOCKS[tier].length - 2}</Badge>}
+                              </div>
+                            )}
+                            {isLocked && (
+                              <div className="text-xs text-[#6b7280]">
+                                {TIER_REQUIREMENTS[tier].slice(0, 1).map((req, i) => (
+                                  <p key={i}>{req}</p>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               </CardContent>
             </Card>
 
+            {/* Activity History */}
             <Card className="border-0 shadow-lg">
               <CardHeader>
-                <CardTitle className="font-['Poppins']">Credit Building History</CardTitle>
-                <CardDescription>Completed circles that built your credit</CardDescription>
+                <CardTitle className="font-['Poppins']">Trust Activity History</CardTitle>
+                <CardDescription>Completed circles that built your trust</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {MOCK_CREDIT_HISTORY.map((record) => (
-                    <div key={record.id} className="p-4 bg-[#f9fafb] rounded-xl">
-                      <div className="flex items-start justify-between mb-2">
-                        <div>
-                          <h4 className="font-semibold text-[#12284b]">{record.circleName}</h4>
-                          <p className="text-sm text-[#6b7280]">Completed {record.completedAt.toLocaleDateString()}</p>
+                  {MOCK_ACTIVITY_HISTORY.map((record) => {
+                    const circleTypeInfo = getCircleTypeInfo(record.circleType);
+                    const CircleIcon = circleTypeInfo.icon;
+                    return (
+                      <div key={record.id} className="p-4 bg-[#f9fafb] rounded-xl">
+                        <div className="flex items-start justify-between mb-2">
+                          <div className="flex items-center gap-3">
+                            <div className={`w-8 h-8 rounded-lg ${circleTypeInfo.bg} flex items-center justify-center flex-shrink-0`}>
+                              <CircleIcon className={`w-4 h-4 ${circleTypeInfo.text}`} />
+                            </div>
+                            <div>
+                              <h4 className="font-semibold text-[#12284b]">{record.circleName}</h4>
+                              <p className="text-sm text-[#6b7280]">Completed {record.completedAt.toLocaleDateString()}</p>
+                            </div>
+                          </div>
+                          <Badge className="bg-[#1abc9c]/10 text-[#1abc9c]">+{record.trustPoints} pts</Badge>
                         </div>
-                        <Badge className="bg-[#1abc9c]/10 text-[#1abc9c]">+{record.creditScoreImpact}</Badge>
+                        <div className="flex items-center gap-6 text-sm">
+                          <div className="flex items-center gap-2">
+                            <DollarSign className="w-4 h-4 text-[#6b7280]" />
+                            <span className="text-[#12284b]">${record.totalContributions.toLocaleString()} contributed</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <CheckCircle className="w-4 h-4 text-[#1abc9c]" />
+                            <span className="text-[#12284b]">{record.onTimePercentage}% on-time</span>
+                          </div>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-6 text-sm">
-                        <div className="flex items-center gap-2">
-                          <DollarSign className="w-4 h-4 text-[#6b7280]" />
-                          <span className="text-[#12284b]">${record.totalContributions.toLocaleString()} contributed</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <CheckCircle className="w-4 h-4 text-[#1abc9c]" />
-                          <span className="text-[#12284b]">{record.onTimePercentage}% on-time</span>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </CardContent>
             </Card>
           </div>
 
           <div className="space-y-6">
+            {/* Trust Factors */}
             <Card className="border-0 shadow-lg">
               <CardHeader>
-                <CardTitle className="font-['Poppins']">Credit Factors</CardTitle>
+                <CardTitle className="font-['Poppins']">Trust Factors</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
                   {[
-                    { label: 'Payment History', score: 95, status: 'Excellent' },
-                    { label: 'Circle Completion', score: 100, status: 'Perfect' },
-                    { label: 'Consistency', score: 88, status: 'Very Good' },
-                    { label: 'Community Standing', score: 92, status: 'Excellent' },
+                    { label: 'On-Time Contributions', score: 92, status: 'Excellent' },
+                    { label: 'Circles Completed', score: 40, status: '2 of 5 for next tier' },
+                    { label: 'Savings Consistency', score: 88, status: 'Very Good' },
+                    { label: 'Member Reputation', score: 95, status: 'Excellent' },
+                    { label: 'Identity Verification', score: 66, status: 'Verified' },
                   ].map((factor, i) => (
                     <div key={i}>
                       <div className="flex justify-between text-sm mb-1">
@@ -1715,18 +1830,61 @@ function CreditPage({ user }: { user: User }) {
                     </div>
                   ))}
                 </div>
+                <div className="mt-4 p-3 bg-[#f39c12]/5 rounded-lg">
+                  <p className="text-xs text-[#f39c12] font-medium">Upgrade to Premium verification to unlock the Pillar tier</p>
+                </div>
               </CardContent>
             </Card>
 
-            <Card className="border-0 shadow-lg bg-gradient-to-br from-[#2467ec] to-[#1abc9c]">
+            {/* Export Credit History */}
+            <Card className="border-0 shadow-lg">
+              <CardHeader>
+                <CardTitle className="font-['Poppins'] flex items-center gap-2">
+                  <FileText className="w-5 h-5 text-[#2467ec]" />
+                  Export Credit History
+                </CardTitle>
+                <CardDescription>Share your savings record with credit reporting agencies</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3 mb-4">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-[#6b7280]">Total Contributions</span>
+                    <span className="font-medium text-[#12284b]">${MOCK_ACTIVITY_HISTORY.reduce((sum, r) => sum + r.totalContributions, 0).toLocaleString()}</span>
+                  </div>
+                  <Separator />
+                  <div className="flex justify-between text-sm">
+                    <span className="text-[#6b7280]">Circles Completed</span>
+                    <span className="font-medium text-[#12284b]">{user.circlesCompleted}</span>
+                  </div>
+                  <Separator />
+                  <div className="flex justify-between text-sm">
+                    <span className="text-[#6b7280]">On-Time Payment Rate</span>
+                    <span className="font-medium text-[#1abc9c]">{Math.round(MOCK_ACTIVITY_HISTORY.reduce((sum, r) => sum + r.onTimePercentage, 0) / MOCK_ACTIVITY_HISTORY.length)}%</span>
+                  </div>
+                  <Separator />
+                  <div className="flex justify-between text-sm">
+                    <span className="text-[#6b7280]">Member Since</span>
+                    <span className="font-medium text-[#12284b]">Jan 2023</span>
+                  </div>
+                </div>
+                <Button className="w-full bg-[#2467ec] hover:bg-[#1a5fd4] rounded-full">
+                  <Download className="w-4 h-4 mr-2" />
+                  Download Report
+                </Button>
+                <p className="text-xs text-[#6b7280] mt-2 text-center">PDF report suitable for submission to credit bureaus</p>
+              </CardContent>
+            </Card>
+
+            {/* Unlock Benefits */}
+            <Card className="border-0 shadow-lg bg-gradient-to-br from-[#f39c12] to-[#e67e22]">
               <CardContent className="p-6 text-white">
                 <div className="flex items-center gap-2 mb-3">
-                  <Award className="w-5 h-5" />
-                  <span className="font-semibold">Credit Builder Program</span>
+                  <Crown className="w-5 h-5" />
+                  <span className="font-semibold">Unlock More Benefits</span>
                 </div>
-                <p className="text-white/80 text-sm mb-4">Join our credit builder circles to boost your score even faster.</p>
-                <Button variant="secondary" className="w-full rounded-full bg-white text-[#2467ec] hover:bg-gray-100">
-                  Explore Programs
+                <p className="text-white/80 text-sm mb-4">Reach higher trust tiers to unlock matching funds, loan access, and priority features.</p>
+                <Button variant="secondary" className="w-full rounded-full bg-white text-[#f39c12] hover:bg-gray-100">
+                  View All Benefits
                 </Button>
               </CardContent>
             </Card>
@@ -2091,7 +2249,7 @@ function VerificationPage({ setCurrentPage }: { setCurrentPage: (page: string) =
                 </li>
                 <li className="flex items-center gap-2">
                   <CheckCircle className="w-4 h-4 text-[#1abc9c]" />
-                  Build stronger credit history
+                  Reach higher trust tiers
                 </li>
               </ul>
             </div>
@@ -2880,8 +3038,8 @@ function PublicProfilePage({ userId, setCurrentPage }: { userId: string; setCurr
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
           <Card className="border-0 shadow-lg text-center p-4">
-            <p className="text-2xl font-bold text-[#2467ec] font-['Poppins']">{publicUser.creditScore}</p>
-            <p className="text-sm text-[#6b7280]">Credit Score</p>
+            <p className="text-2xl font-bold text-[#2467ec] font-['Poppins']">{getTrustTierInfo(publicUser.trustTier).label}</p>
+            <p className="text-sm text-[#6b7280]">Trust Level</p>
           </Card>
           <Card className="border-0 shadow-lg text-center p-4">
             <p className="text-2xl font-bold text-[#1abc9c] font-['Poppins']">${publicUser.totalSaved.toLocaleString()}</p>
@@ -2970,7 +3128,7 @@ function App() {
       case 'add-money':
         return <AddMoneyPage setCurrentPage={setCurrentPage} />;
       case 'credit':
-        return user ? <CreditPage user={user} /> : <LandingPage setCurrentPage={setCurrentPage} />;
+        return user ? <TrustScorePage user={user} /> : <LandingPage setCurrentPage={setCurrentPage} />;
       case 'yield':
         return <YieldPage />;
       case 'matching':
