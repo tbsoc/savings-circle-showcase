@@ -126,10 +126,13 @@ type MatchingFundProgram = {
   name: string;
   organization: string;
   description: string;
-  matchRatio: string;
-  maxMatch: number;
+  poolAmount: number;
+  estimatedPayout: number;
   eligibilityCriteria: string[];
-  deadline: Date;
+  minContribution: number;
+  minStackDuration: string;
+  distributionDate: Date;
+  applicants: number;
   logo?: string;
 };
 
@@ -338,31 +341,40 @@ const MOCK_MATCHING_PROGRAMS: MatchingFundProgram[] = [
     id: '1',
     name: 'First-Time Saver Match',
     organization: 'Community Foundation',
-    description: 'Double your first $500 in savings',
-    matchRatio: '1:1',
-    maxMatch: 500,
+    description: 'Matching pool for first-time savers completing their initial stack',
+    poolAmount: 25000,
+    estimatedPayout: 500,
     eligibilityCriteria: ['First-time CircleWealth user', 'Income below $50,000', 'Complete 3 cycles'],
-    deadline: new Date('2024-06-30'),
+    minContribution: 500,
+    minStackDuration: '3 months',
+    distributionDate: new Date('2024-06-30'),
+    applicants: 32,
   },
   {
     id: '2',
     name: 'Family Emergency Fund',
     organization: 'Family Support Network',
-    description: 'Match for emergency savings stacks',
-    matchRatio: '2:1',
-    maxMatch: 1000,
+    description: 'Supporting families building emergency savings through stacks',
+    poolAmount: 50000,
+    estimatedPayout: 1200,
     eligibilityCriteria: ['Household with children', 'Emergency fund purpose', 'Verified identity'],
-    deadline: new Date('2024-12-31'),
+    minContribution: 1000,
+    minStackDuration: '6 months',
+    distributionDate: new Date('2024-12-31'),
+    applicants: 18,
   },
   {
     id: '3',
     name: 'Youth Savings Initiative',
     organization: 'Future Builders Fund',
-    description: 'Support for savers under 30',
-    matchRatio: '1:1',
-    maxMatch: 750,
+    description: 'Helping young savers build their first savings habit',
+    poolAmount: 15000,
+    estimatedPayout: 750,
     eligibilityCriteria: ['Age 18-30', 'Student or recent graduate', 'Complete verification'],
-    deadline: new Date('2024-09-30'),
+    minContribution: 300,
+    minStackDuration: '3 months',
+    distributionDate: new Date('2024-09-30'),
+    applicants: 12,
   },
 ];
 
@@ -1339,11 +1351,11 @@ function CreateCirclePage({ setCurrentPage }: { setCurrentPage: (page: string) =
   const [circleType, setCircleType] = useState<CircleType>('rosca');
 
   const circleTypes = [
-    { id: 'rosca' as CircleType, name: 'ROSCA (Rotating)', description: 'Classic rotating savings - each member gets the pot in turn', icon: Users, color: 'from-[#2467ec] to-[#1a5fd4]' },
-    { id: 'chit_fund' as CircleType, name: 'Chit Fund', description: 'Auction-based pool - members bid for the pot each cycle, lowest discount wins', icon: Gavel, color: 'from-[#6366f1] to-[#4f46e5]' },
-    { id: 'savings_challenge' as CircleType, name: 'Savings Challenge', description: 'Compete with friends to reach savings goals first', icon: Trophy, color: 'from-[#f39c12] to-[#e67e22]' },
-    { id: 'emergency_fund' as CircleType, name: 'Emergency Fund', description: 'Build a shared emergency pool with mutual aid withdrawals', icon: Shield, color: 'from-[#1abc9c] to-[#16a085]' },
-    { id: 'goal_based' as CircleType, name: 'Goal-Based', description: 'Save together toward a shared goal or purchase', icon: Target, color: 'from-[#9b59b6] to-[#8e44ad]' },
+    { id: 'rosca' as CircleType, name: 'ROSCA (Rotating)', description: 'Classic rotating savings - each member gets the pot in turn', icon: Users, color: 'from-[#2467ec] to-[#1a5fd4]', buildsCreditHistory: true },
+    { id: 'chit_fund' as CircleType, name: 'Chit Fund', description: 'Auction-based pool - members bid for the pot each cycle, lowest discount wins', icon: Gavel, color: 'from-[#6366f1] to-[#4f46e5]', buildsCreditHistory: true },
+    { id: 'savings_challenge' as CircleType, name: 'Savings Challenge', description: 'Compete with friends to reach savings goals first', icon: Trophy, color: 'from-[#f39c12] to-[#e67e22]', buildsCreditHistory: false },
+    { id: 'emergency_fund' as CircleType, name: 'Emergency Fund', description: 'Build a shared emergency pool with mutual aid withdrawals', icon: Shield, color: 'from-[#1abc9c] to-[#16a085]', buildsCreditHistory: false },
+    { id: 'goal_based' as CircleType, name: 'Goal-Based', description: 'Save together toward a shared goal or purchase', icon: Target, color: 'from-[#9b59b6] to-[#8e44ad]', buildsCreditHistory: false },
   ];
 
   const stepLabels: Record<CircleType, string[]> = {
@@ -1404,6 +1416,12 @@ function CreateCirclePage({ setCurrentPage }: { setCurrentPage: (page: string) =
                       </div>
                       <h4 className="font-semibold text-[#12284b] mb-1">{type.name}</h4>
                       <p className="text-sm text-[#6b7280]">{type.description}</p>
+                      {type.buildsCreditHistory && (
+                        <div className="mt-2 flex items-center gap-1">
+                          <FileText className="w-3 h-3 text-[#1abc9c]" />
+                          <span className="text-xs font-medium text-[#1abc9c]">Builds exportable credit history</span>
+                        </div>
+                      )}
                     </button>
                   ))}
                 </div>
@@ -1965,12 +1983,15 @@ function YieldPage() {
 }
 
 function MatchingFundsPage({ setCurrentPage }: { setCurrentPage: (page: string) => void }) {
+  const [donateTarget, setDonateTarget] = useState<string>(MOCK_MATCHING_PROGRAMS[0].id);
+  const [donateAmount, setDonateAmount] = useState('');
+
   return (
     <div className="min-h-screen bg-[#f9fafb] pt-24 pb-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-[#12284b] font-['Poppins']">Matching Funds</h1>
-          <p className="text-[#6b7280]">Get rewarded for saving with partner programs</p>
+          <p className="text-[#6b7280]">Get rewarded for saving — or donate to help others</p>
         </div>
 
         <div className="grid lg:grid-cols-3 gap-8">
@@ -1984,11 +2005,33 @@ function MatchingFundsPage({ setCurrentPage }: { setCurrentPage: (page: string) 
                       <p className="text-[#6b7280]">{program.organization}</p>
                     </div>
                     <div className="text-right">
-                      <p className="text-2xl font-bold text-[#1abc9c] font-['Poppins']">{program.matchRatio}</p>
-                      <p className="text-sm text-[#6b7280]">up to ${program.maxMatch}</p>
+                      <p className="text-2xl font-bold text-[#1abc9c] font-['Poppins']">${program.poolAmount.toLocaleString()}</p>
+                      <p className="text-sm text-[#6b7280]">in matching pool</p>
                     </div>
                   </div>
                   <p className="text-[#6b7280] mb-4">{program.description}</p>
+
+                  <div className="p-3 bg-[#2467ec]/5 rounded-lg mb-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-[#12284b]">Estimated payout if you qualify</p>
+                        <p className="text-xs text-[#6b7280]">{program.applicants} applicants · Based on current pool size</p>
+                      </div>
+                      <p className="text-xl font-bold text-[#2467ec] font-['Poppins']">${program.estimatedPayout.toLocaleString()}</p>
+                    </div>
+                  </div>
+
+                  <div className="grid sm:grid-cols-2 gap-3 mb-4">
+                    <div className="p-3 bg-[#f9fafb] rounded-lg">
+                      <p className="text-xs text-[#6b7280]">Min. Contribution</p>
+                      <p className="text-sm font-medium text-[#12284b]">${program.minContribution.toLocaleString()}</p>
+                    </div>
+                    <div className="p-3 bg-[#f9fafb] rounded-lg">
+                      <p className="text-xs text-[#6b7280]">Min. Stack Duration</p>
+                      <p className="text-sm font-medium text-[#12284b]">{program.minStackDuration}</p>
+                    </div>
+                  </div>
+
                   <div className="mb-4">
                     <p className="text-sm font-medium text-[#12284b] mb-2">Eligibility:</p>
                     <div className="flex flex-wrap gap-2">
@@ -1997,11 +2040,21 @@ function MatchingFundsPage({ setCurrentPage }: { setCurrentPage: (page: string) 
                       ))}
                     </div>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <p className="text-sm text-[#6b7280]">Deadline: {program.deadline.toLocaleDateString()}</p>
-                    <Button onClick={() => setCurrentPage('apply-matching')} className="bg-[#2467ec] hover:bg-[#1a5fd4] rounded-full">
-                      Apply Now
-                    </Button>
+
+                  <div className="flex items-center justify-between pt-3 border-t border-gray-100">
+                    <div>
+                      <p className="text-xs text-[#6b7280]">Funds distributed</p>
+                      <p className="text-sm font-medium text-[#12284b]">{program.distributionDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</p>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button variant="outline" onClick={() => { setDonateTarget(program.id); setDonateAmount(''); }} className="rounded-full text-[#e74c3c] border-[#e74c3c]/30 hover:bg-[#e74c3c]/5">
+                        <Heart className="w-4 h-4 mr-1" />
+                        Donate
+                      </Button>
+                      <Button onClick={() => setCurrentPage('apply-matching')} className="bg-[#2467ec] hover:bg-[#1a5fd4] rounded-full">
+                        Apply Now
+                      </Button>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
@@ -2050,14 +2103,27 @@ function MatchingFundsPage({ setCurrentPage }: { setCurrentPage: (page: string) 
               <CardContent>
                 <div className="space-y-4">
                   <div className="space-y-2">
+                    <Label>Choose Fund</Label>
+                    <Select value={donateTarget} onValueChange={setDonateTarget}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {MOCK_MATCHING_PROGRAMS.map((p) => (
+                          <SelectItem key={p.id} value={p.id}>{p.name} — {p.organization}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
                     <Label>Donation Amount</Label>
                     <div className="relative">
                       <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6b7280]" />
-                      <Input type="number" className="pl-10" placeholder="50" />
+                      <Input type="number" className="pl-10" placeholder="50" value={donateAmount} onChange={(e) => setDonateAmount(e.target.value)} />
                     </div>
                     <div className="flex gap-2">
                       {['25', '50', '100', '250'].map((amt) => (
-                        <button key={amt} className="flex-1 px-3 py-1.5 bg-[#f9fafb] rounded-lg text-xs text-[#12284b] hover:bg-gray-200 transition-colors">${amt}</button>
+                        <button key={amt} onClick={() => setDonateAmount(amt)} className="flex-1 px-3 py-1.5 bg-[#f9fafb] rounded-lg text-xs text-[#12284b] hover:bg-gray-200 transition-colors">${amt}</button>
                       ))}
                     </div>
                   </div>
@@ -2069,7 +2135,7 @@ function MatchingFundsPage({ setCurrentPage }: { setCurrentPage: (page: string) 
                   </div>
                   <Button className="w-full bg-[#e74c3c] hover:bg-[#c0392b] rounded-full">
                     <Heart className="w-4 h-4 mr-2" />
-                    Donate Now
+                    Donate {donateAmount ? `$${donateAmount}` : 'Now'}
                   </Button>
                 </div>
               </CardContent>
