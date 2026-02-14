@@ -825,7 +825,7 @@ function LandingPage({ setCurrentPage }: { setCurrentPage: (page: string) => voi
             
             <div className={`relative transition-all duration-1000 delay-300 ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-10'}`}>
               <div className="relative rounded-3xl overflow-hidden shadow-2xl">
-                <img src="/hero-image.jpg" alt="People saving together" className="w-full h-auto object-cover" />
+                <img src={import.meta.env.BASE_URL + 'hero-image.jpg'} alt="People saving together" className="w-full h-auto object-cover" />
               </div>
               <div className="absolute -top-6 -right-6 w-24 h-24 bg-[#2467ec] rounded-2xl flex items-center justify-center shadow-lg animate-float">
                 <TrendingUp className="w-10 h-10 text-white" />
@@ -880,7 +880,7 @@ function LandingPage({ setCurrentPage }: { setCurrentPage: (page: string) => voi
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center mb-20">
             <div className="order-2 lg:order-1">
-              <img src="/feature-scheduling.jpg" alt="Smart Scheduling" className="rounded-3xl shadow-xl w-full" />
+              <img src={import.meta.env.BASE_URL + 'feature-scheduling.jpg'} alt="Smart Scheduling" className="rounded-3xl shadow-xl w-full" />
             </div>
             <div className="order-1 lg:order-2 space-y-6">
               <Badge className="bg-[#2467ec]/10 text-[#2467ec] hover:bg-[#2467ec]/20">Smart Features</Badge>
@@ -968,9 +968,9 @@ function LandingPage({ setCurrentPage }: { setCurrentPage: (page: string) => voi
           
           <div className="grid md:grid-cols-3 gap-8">
             {[
-              { name: 'Sarah M.', role: 'Teacher, Saved $12,000', avatar: '/avatar-sarah.jpg', quote: 'Stacks helped me save for my daughter\'s college fund in a way that kept me accountable. The community aspect made all the difference.', rating: 5 },
-              { name: 'Marcus T.', role: 'Small Business Owner', avatar: '/avatar-marcus.jpg', quote: 'I\'ve been part of savings stacks before, but the transparency and ease of Stacks is unmatched. Highly recommend!', rating: 5 },
-              { name: 'Elena R.', role: 'Healthcare Worker', avatar: '/avatar-elena.jpg', quote: 'The matched savings program helped me reach my emergency fund goal twice as fast. This platform truly cares about its users.', rating: 5 },
+              { name: 'Sarah M.', role: 'Teacher, Saved $12,000', avatar: import.meta.env.BASE_URL + 'avatar-sarah.jpg', quote: 'Stacks helped me save for my daughter\'s college fund in a way that kept me accountable. The community aspect made all the difference.', rating: 5 },
+              { name: 'Marcus T.', role: 'Small Business Owner', avatar: import.meta.env.BASE_URL + 'avatar-marcus.jpg', quote: 'I\'ve been part of savings stacks before, but the transparency and ease of Stacks is unmatched. Highly recommend!', rating: 5 },
+              { name: 'Elena R.', role: 'Healthcare Worker', avatar: import.meta.env.BASE_URL + 'avatar-elena.jpg', quote: 'The matched savings program helped me reach my emergency fund goal twice as fast. This platform truly cares about its users.', rating: 5 },
             ].map((testimonial, i) => (
               <Card key={i} className="border-0 shadow-lg hover:shadow-xl transition-all">
                 <CardContent className="p-6">
