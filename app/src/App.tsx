@@ -23,7 +23,9 @@ import {
   Globe, Bell, ChevronLeft, Gavel, Timer, Flame,
   HandCoins, AlertTriangle, ThumbsUp, ThumbsDown, Flag,
   ShoppingBag, Building2, Briefcase,
-  Sprout, Download, FileText
+  Sprout, Download, FileText,
+  Search, Hash, Compass, Zap,
+  Send, Pin, Image, Bookmark, MoreHorizontal, Reply
 } from 'lucide-react';
 
 // Types
@@ -153,19 +155,6 @@ type GroupInvestment = {
   employerMatched?: boolean;
 };
 
-type EmployerProgram = {
-  id: string;
-  organizationName: string;
-  programType: 'employer' | 'union';
-  enrolledSince: Date;
-  matchPercentage: number;
-  maxMatch: number;
-  employeesEnrolled: number;
-  totalSaved: number;
-  benefits: string[];
-  payrollIntegration: boolean;
-};
-
 type MatchingFundProgram = {
   id: string;
   name: string;
@@ -219,6 +208,78 @@ type PublicUser = {
   bio?: string;
   location?: string;
   isPublic: boolean;
+};
+
+type CommunityType = 'public' | 'private';
+
+type Community = {
+  id: string;
+  name: string;
+  type: CommunityType;
+  description: string;
+  category: string;
+  memberCount: number;
+  activeStacks: number;
+  totalSaved: number;
+  createdAt: Date;
+  tags: string[];
+  isJoined: boolean;
+  governanceModel: 'democratic' | 'admin_led' | 'hybrid';
+  requirements?: string[];
+  matchmakingEnabled: boolean;
+};
+
+type CommunityMember = {
+  id: string;
+  name: string;
+  avatar?: string;
+  trustTier: TrustTier;
+  joinedAt: Date;
+  role: 'member' | 'moderator' | 'admin';
+  location: string;
+  savingsGoal: { targetAmount: number; targetDate: Date; purpose: string };
+};
+
+type MatchProfile = {
+  id: string;
+  name: string;
+  avatar?: string;
+  trustTier: TrustTier;
+  location: string;
+  targetAmount: number;
+  timeline: string;
+  monthlyContribution: number;
+  preferredStackType: CircleType;
+  compatibilityScore: number;
+  matchReasons: string[];
+};
+
+type PostCategory = 'tip' | 'question' | 'news' | 'milestone' | 'discussion';
+
+type PostComment = {
+  id: string;
+  authorName: string;
+  authorTrustTier: TrustTier;
+  content: string;
+  timestamp: Date;
+  likes: number;
+  isLiked: boolean;
+};
+
+type CommunityPost = {
+  id: string;
+  authorName: string;
+  authorTrustTier: TrustTier;
+  authorRole: 'member' | 'moderator' | 'admin';
+  content: string;
+  category: PostCategory;
+  timestamp: Date;
+  likes: number;
+  isLiked: boolean;
+  isPinned: boolean;
+  isBookmarked: boolean;
+  comments: PostComment[];
+  communityId: string;
 };
 
 // Mock Data
@@ -478,18 +539,7 @@ const MOCK_GROUP_INVESTMENTS: GroupInvestment[] = [
   { id: 'gi5', name: 'Union Pension Pool', description: 'Collective retirement savings managed by the cooperative', type: 'retirement', poolSize: 284000, yourContribution: 3000, participants: 142, returnRate: 5.5, minContribution: 25 },
 ];
 
-const MOCK_EMPLOYER_PROGRAM: EmployerProgram = {
-  id: 'ep1',
-  organizationName: 'West Coast Workers Collective',
-  programType: 'union',
-  enrolledSince: new Date('2024-01-15'),
-  matchPercentage: 50,
-  maxMatch: 200,
-  employeesEnrolled: 142,
-  totalSaved: 284000,
-  benefits: ['Matched savings up to $200/month', 'Payroll integration', 'Retirement stack access', 'Exclusive marketplace deals'],
-  payrollIntegration: true,
-};
+
 
 const MOCK_MATCHING_PROGRAMS: MatchingFundProgram[] = [
   {
@@ -609,11 +659,238 @@ const MOCK_PUBLIC_USERS: PublicUser[] = [
   },
 ];
 
+const MOCK_COMMUNITIES: Community[] = [
+  {
+    id: 'c1',
+    name: 'First-Time Homebuyers',
+    type: 'public',
+    description: 'A community of savers working toward their first home purchase. Get matched with others saving for down payments, share tips, and form stacks together.',
+    category: 'Housing',
+    memberCount: 234,
+    activeStacks: 18,
+    totalSaved: 892000,
+    createdAt: new Date('2024-01-01'),
+    tags: ['down payment', 'homeownership', 'FHA loans', 'saving goals'],
+    isJoined: true,
+    governanceModel: 'democratic',
+    matchmakingEnabled: true,
+  },
+  {
+    id: 'c2',
+    name: 'Emergency Fund Builders',
+    type: 'public',
+    description: 'Build your safety net with others who understand the importance of emergency savings. Perfect for those starting from zero.',
+    category: 'Emergency Savings',
+    memberCount: 412,
+    activeStacks: 32,
+    totalSaved: 1240000,
+    createdAt: new Date('2023-11-15'),
+    tags: ['emergency fund', 'safety net', '3-6 months', 'beginners'],
+    isJoined: false,
+    governanceModel: 'hybrid',
+    matchmakingEnabled: true,
+  },
+  {
+    id: 'c3',
+    name: 'Student Debt Freedom',
+    type: 'public',
+    description: 'Aggressively paying down student loans? Join others on the same journey. Form stacks to accelerate debt payoff.',
+    category: 'Debt Payoff',
+    memberCount: 178,
+    activeStacks: 12,
+    totalSaved: 456000,
+    createdAt: new Date('2024-02-01'),
+    tags: ['student loans', 'debt free', 'payoff strategy'],
+    isJoined: false,
+    governanceModel: 'democratic',
+    matchmakingEnabled: true,
+  },
+  {
+    id: 'c4',
+    name: 'West Coast Workers Collective',
+    type: 'private',
+    description: 'Exclusive savings community for members of the West Coast Workers Collective. Access matched savings and group benefits.',
+    category: 'Organization',
+    memberCount: 142,
+    activeStacks: 8,
+    totalSaved: 284000,
+    createdAt: new Date('2024-01-15'),
+    tags: ['union', 'employer match', 'payroll'],
+    isJoined: true,
+    governanceModel: 'admin_led',
+    requirements: ['Must be a member of West Coast Workers Collective', 'Valid employee ID required'],
+    matchmakingEnabled: false,
+  },
+  {
+    id: 'c5',
+    name: 'New Parents Savings Circle',
+    type: 'public',
+    description: 'Preparing for a baby or just had one? Save for childcare, education, and family expenses with other new parents.',
+    category: 'Family',
+    memberCount: 96,
+    activeStacks: 7,
+    totalSaved: 198000,
+    createdAt: new Date('2024-03-01'),
+    tags: ['parenting', 'childcare', '529 plans', 'family budget'],
+    isJoined: false,
+    governanceModel: 'democratic',
+    matchmakingEnabled: true,
+  },
+  {
+    id: 'c6',
+    name: 'Small Business Owners',
+    type: 'public',
+    description: 'Entrepreneurs and small business owners saving for growth, equipment, and rainy days.',
+    category: 'Business',
+    memberCount: 67,
+    activeStacks: 5,
+    totalSaved: 340000,
+    createdAt: new Date('2024-04-01'),
+    tags: ['business', 'entrepreneurs', 'growth capital'],
+    isJoined: false,
+    governanceModel: 'hybrid',
+    matchmakingEnabled: true,
+  },
+];
+
+const MOCK_COMMUNITY_MEMBERS: CommunityMember[] = [
+  { id: 'cm1', name: 'Alex Johnson', trustTier: 'trusted', joinedAt: new Date('2024-01-05'), role: 'member', location: 'Portland, OR', savingsGoal: { targetAmount: 40000, targetDate: new Date('2026-06-01'), purpose: 'Down payment on a 2BR condo' } },
+  { id: 'cm2', name: 'Maria Garcia', trustTier: 'reliable', joinedAt: new Date('2024-01-10'), role: 'moderator', location: 'Los Angeles, CA', savingsGoal: { targetAmount: 50000, targetDate: new Date('2026-01-01'), purpose: 'Down payment — single family home' } },
+  { id: 'cm3', name: 'James Wilson', trustTier: 'pillar', joinedAt: new Date('2024-01-02'), role: 'admin', location: 'Seattle, WA', savingsGoal: { targetAmount: 60000, targetDate: new Date('2025-12-01'), purpose: 'Down payment + closing costs' } },
+  { id: 'cm4', name: 'Aisha Patel', trustTier: 'contributor', joinedAt: new Date('2024-02-15'), role: 'member', location: 'Portland, OR', savingsGoal: { targetAmount: 35000, targetDate: new Date('2026-09-01'), purpose: 'FHA loan down payment' } },
+  { id: 'cm5', name: 'David Kim', trustTier: 'trusted', joinedAt: new Date('2024-01-20'), role: 'member', location: 'San Francisco, CA', savingsGoal: { targetAmount: 80000, targetDate: new Date('2027-01-01'), purpose: 'Down payment in Bay Area' } },
+  { id: 'cm6', name: 'Rachel Thompson', trustTier: 'reliable', joinedAt: new Date('2024-03-01'), role: 'member', location: 'Denver, CO', savingsGoal: { targetAmount: 30000, targetDate: new Date('2025-08-01'), purpose: '10% down on starter home' } },
+  { id: 'cm7', name: 'Carlos Rivera', trustTier: 'newcomer', joinedAt: new Date('2024-04-10'), role: 'member', location: 'Austin, TX', savingsGoal: { targetAmount: 45000, targetDate: new Date('2026-03-01'), purpose: 'Down payment — new construction' } },
+  { id: 'cm8', name: 'Priya Sharma', trustTier: 'contributor', joinedAt: new Date('2024-02-28'), role: 'member', location: 'Portland, OR', savingsGoal: { targetAmount: 38000, targetDate: new Date('2026-06-01'), purpose: 'First home — townhouse' } },
+];
+
+const MOCK_MATCH_PROFILES: MatchProfile[] = [
+  { id: 'mp1', name: 'Aisha Patel', trustTier: 'contributor', location: 'Portland, OR', targetAmount: 35000, timeline: '18 months', monthlyContribution: 800, preferredStackType: 'rosca', compatibilityScore: 95, matchReasons: ['Same city', 'Similar target amount', 'Aligned timeline', 'Both FHA-eligible'] },
+  { id: 'mp2', name: 'Priya Sharma', trustTier: 'contributor', location: 'Portland, OR', targetAmount: 38000, timeline: '18 months', monthlyContribution: 750, preferredStackType: 'goal_based', compatibilityScore: 91, matchReasons: ['Same city', 'Similar savings goal', 'Compatible contribution level'] },
+  { id: 'mp3', name: 'Rachel Thompson', trustTier: 'reliable', location: 'Denver, CO', targetAmount: 30000, timeline: '12 months', monthlyContribution: 1000, preferredStackType: 'rosca', compatibilityScore: 82, matchReasons: ['Similar target amount', 'Higher trust tier', 'Aggressive saver'] },
+  { id: 'mp4', name: 'Carlos Rivera', trustTier: 'newcomer', location: 'Austin, TX', targetAmount: 45000, timeline: '20 months', monthlyContribution: 900, preferredStackType: 'savings_challenge', compatibilityScore: 74, matchReasons: ['Similar timeline', 'Motivated new saver'] },
+  { id: 'mp5', name: 'David Kim', trustTier: 'trusted', location: 'San Francisco, CA', targetAmount: 80000, timeline: '30 months', monthlyContribution: 1200, preferredStackType: 'rosca', compatibilityScore: 68, matchReasons: ['High trust tier', 'Experienced saver', 'Different market'] },
+];
+
+const MOCK_COMMUNITY_POSTS: CommunityPost[] = [
+  {
+    id: 'post1',
+    authorName: 'James Wilson',
+    authorTrustTier: 'pillar',
+    authorRole: 'admin',
+    content: 'Welcome to First-Time Homebuyers! A few ground rules:\n\n1. Be respectful and supportive of everyone\'s journey\n2. Share your experiences openly - we all learn from each other\n3. No financial advice that you aren\'t qualified to give\n4. Use the matchmaking feature to find stack partners\n\nLet\'s build wealth together!',
+    category: 'discussion',
+    timestamp: new Date('2024-01-02'),
+    likes: 47,
+    isLiked: true,
+    isPinned: true,
+    isBookmarked: false,
+    comments: [
+      { id: 'c1', authorName: 'Maria Garcia', authorTrustTier: 'reliable', content: 'Thanks for setting this up James! Excited to be here.', timestamp: new Date('2024-01-02'), likes: 12, isLiked: false },
+      { id: 'c2', authorName: 'Alex Johnson', authorTrustTier: 'trusted', content: 'Great community. Looking forward to connecting with other Portland savers!', timestamp: new Date('2024-01-05'), likes: 8, isLiked: true },
+    ],
+    communityId: 'c1',
+  },
+  {
+    id: 'post2',
+    authorName: 'Maria Garcia',
+    authorTrustTier: 'reliable',
+    authorRole: 'moderator',
+    content: 'TIP: If you\'re going the FHA route, you only need 3.5% down! For a $300K home that\'s $10,500 instead of $60K for 20%. The tradeoff is PMI (private mortgage insurance) but it can be worth it to get into the market sooner.\n\nAlso check if your state has first-time buyer assistance programs. California has CalHFA, Washington has WSHFC, etc.',
+    category: 'tip',
+    timestamp: new Date('2024-04-15'),
+    likes: 34,
+    isLiked: false,
+    isPinned: false,
+    isBookmarked: true,
+    comments: [
+      { id: 'c3', authorName: 'Aisha Patel', authorTrustTier: 'contributor', content: 'This is so helpful! I had no idea about the Oregon Bond Residential Loan program.', timestamp: new Date('2024-04-15'), likes: 5, isLiked: false },
+      { id: 'c4', authorName: 'Carlos Rivera', authorTrustTier: 'newcomer', content: 'Does anyone know the income limits for Texas first-time buyer programs?', timestamp: new Date('2024-04-16'), likes: 2, isLiked: false },
+      { id: 'c5', authorName: 'Maria Garcia', authorTrustTier: 'reliable', content: 'Carlos - Texas has TDHCA programs. Income limits vary by county but generally around $97K for a family. Check their website!', timestamp: new Date('2024-04-16'), likes: 7, isLiked: false },
+    ],
+    communityId: 'c1',
+  },
+  {
+    id: 'post3',
+    authorName: 'Rachel Thompson',
+    authorTrustTier: 'reliable',
+    authorRole: 'member',
+    content: 'Just got pre-approved for my first mortgage! After 14 months of saving with my stack, I finally hit my down payment goal of $30K. This community kept me accountable every step of the way. Thank you all!',
+    category: 'milestone',
+    timestamp: new Date('2024-04-12'),
+    likes: 62,
+    isLiked: true,
+    isPinned: false,
+    isBookmarked: false,
+    comments: [
+      { id: 'c6', authorName: 'James Wilson', authorTrustTier: 'pillar', content: 'Congratulations Rachel!! This is what it\'s all about!', timestamp: new Date('2024-04-12'), likes: 14, isLiked: true },
+      { id: 'c7', authorName: 'David Kim', authorTrustTier: 'trusted', content: 'Amazing! What lender did you go with? I\'m starting to shop around.', timestamp: new Date('2024-04-12'), likes: 3, isLiked: false },
+      { id: 'c8', authorName: 'Rachel Thompson', authorTrustTier: 'reliable', content: 'I went with a local credit union - they had the best rates and their fees were way lower than the big banks. Highly recommend shopping at least 3-4 lenders!', timestamp: new Date('2024-04-13'), likes: 9, isLiked: false },
+      { id: 'c9', authorName: 'Priya Sharma', authorTrustTier: 'contributor', content: 'So inspiring! I\'m at $22K of my $38K goal. Seeing your success keeps me going.', timestamp: new Date('2024-04-13'), likes: 11, isLiked: false },
+    ],
+    communityId: 'c1',
+  },
+  {
+    id: 'post4',
+    authorName: 'Aisha Patel',
+    authorTrustTier: 'contributor',
+    authorRole: 'member',
+    content: 'Has anyone used a homebuyer education course? My lender is requiring one and I\'m not sure which to pick. I\'ve seen HUD-approved counseling agencies and online courses like Framework. What was your experience?',
+    category: 'question',
+    timestamp: new Date('2024-04-10'),
+    likes: 8,
+    isLiked: false,
+    isPinned: false,
+    isBookmarked: false,
+    comments: [
+      { id: 'c10', authorName: 'Maria Garcia', authorTrustTier: 'reliable', content: 'I did the Framework online course - took about 4-6 hours and cost $75. It was actually really informative even though I thought I knew everything already!', timestamp: new Date('2024-04-10'), likes: 6, isLiked: false },
+      { id: 'c11', authorName: 'James Wilson', authorTrustTier: 'pillar', content: 'HUD-approved in-person counseling is free and they can connect you with down payment assistance programs. I\'d recommend that route.', timestamp: new Date('2024-04-11'), likes: 10, isLiked: true },
+    ],
+    communityId: 'c1',
+  },
+  {
+    id: 'post5',
+    authorName: 'David Kim',
+    authorTrustTier: 'trusted',
+    authorRole: 'member',
+    content: 'NEWS: Mortgage rates dropped to 6.2% this week - lowest in 4 months! If you\'re close to being ready, this might be a good window to lock in a rate. Of course, nobody can predict where rates go next, but the trend is encouraging.',
+    category: 'news',
+    timestamp: new Date('2024-04-08'),
+    likes: 29,
+    isLiked: false,
+    isPinned: false,
+    isBookmarked: true,
+    comments: [
+      { id: 'c12', authorName: 'Carlos Rivera', authorTrustTier: 'newcomer', content: 'Still saving but this is encouraging for when I\'m ready in about a year!', timestamp: new Date('2024-04-08'), likes: 3, isLiked: false },
+    ],
+    communityId: 'c1',
+  },
+  {
+    id: 'post6',
+    authorName: 'Priya Sharma',
+    authorTrustTier: 'contributor',
+    authorRole: 'member',
+    content: 'Looking for 2-3 more people to join our Portland Down Payment Savers stack! We\'re doing $800/month ROSCA style with 5 members. Already have 3 committed. DM me or use the matchmaking feature if you\'re in the Portland area with a similar timeline (18 months).',
+    category: 'discussion',
+    timestamp: new Date('2024-04-05'),
+    likes: 15,
+    isLiked: false,
+    isPinned: false,
+    isBookmarked: false,
+    comments: [
+      { id: 'c13', authorName: 'Aisha Patel', authorTrustTier: 'contributor', content: 'I\'m interested! Just matched with you through the matchmaking tool actually. Let\'s connect!', timestamp: new Date('2024-04-05'), likes: 4, isLiked: false },
+      { id: 'c14', authorName: 'Alex Johnson', authorTrustTier: 'trusted', content: 'Count me in too - I\'m Portland based and saving for the same timeline.', timestamp: new Date('2024-04-06'), likes: 3, isLiked: false },
+    ],
+    communityId: 'c1',
+  },
+];
+
 // Components
 function Navigation({ currentPage, setCurrentPage, user }: { currentPage: string; setCurrentPage: (page: string) => void; user?: User }) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [showMoreMenu, setShowMoreMenu] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 50);
@@ -621,20 +898,28 @@ function Navigation({ currentPage, setCurrentPage, user }: { currentPage: string
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const navLinks = user ? [
-    { label: 'Dashboard', page: 'dashboard' },
-    { label: 'Wallet', page: 'wallet' },
-    { label: 'My Stacks', page: 'circles' },
-    { label: 'Marketplace', page: 'marketplace' },
-    { label: 'Investments', page: 'investments' },
-    { label: 'Organization', page: 'employer' },
-    { label: 'Trust Score', page: 'credit' },
-    { label: 'Matching Funds', page: 'matching' },
+  const primaryLinks = user ? [
+    { label: 'Dashboard', page: 'dashboard', icon: BarChart3 },
+    { label: 'My Stacks', page: 'circles', icon: Users },
+    { label: 'Communities', page: 'communities', icon: Globe },
+    { label: 'Marketplace', page: 'marketplace', icon: ShoppingBag },
   ] : [
-    { label: 'How it Works', page: 'how-it-works' },
-    { label: 'Features', page: 'features' },
-    { label: 'About', page: 'about' },
+    { label: 'How it Works', page: 'how-it-works', icon: CheckCircle },
+    { label: 'Features', page: 'features', icon: Star },
+    { label: 'About', page: 'about', icon: Heart },
   ];
+
+  const secondaryLinks = user ? [
+    { label: 'Wallet', page: 'wallet', icon: Wallet as React.FC<{ className?: string }>, desc: 'Manage funds' },
+    { label: 'Investments', page: 'investments', icon: TrendingUp, desc: 'Grow your money' },
+    { label: 'Trust Score', page: 'credit', icon: Award, desc: 'Your reputation' },
+    { label: 'Matching Funds', page: 'matching', icon: Gift, desc: 'Get matched savings' },
+  ] : [];
+
+  const allMobileLinks = user ? [
+    ...primaryLinks,
+    ...secondaryLinks.map(l => ({ label: l.label, page: l.page, icon: l.icon })),
+  ] : primaryLinks;
 
   return (
     <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled ? 'glass shadow-lg' : 'bg-transparent'}`}>
@@ -647,17 +932,54 @@ function Navigation({ currentPage, setCurrentPage, user }: { currentPage: string
             <span className="text-xl font-bold text-[#12284b] font-['Poppins']">Stacks</span>
           </button>
 
-          <div className="hidden lg:flex items-center gap-8">
-            {navLinks.map((link) => (
+          <div className="hidden lg:flex items-center gap-6">
+            {primaryLinks.map((link) => (
               <button
                 key={link.page}
                 onClick={() => setCurrentPage(link.page)}
-                className={`text-sm font-medium transition-colors relative group ${currentPage === link.page ? 'text-[#2467ec]' : 'text-[#6b7280] hover:text-[#12284b]'}`}
+                className={`text-sm font-medium transition-colors relative group flex items-center gap-1.5 ${currentPage === link.page ? 'text-[#2467ec]' : 'text-[#6b7280] hover:text-[#12284b]'}`}
               >
+                <link.icon className="w-4 h-4" />
                 {link.label}
                 <span className={`absolute -bottom-1 left-0 h-0.5 bg-[#2467ec] transition-all ${currentPage === link.page ? 'w-full' : 'w-0 group-hover:w-full'}`} />
               </button>
             ))}
+            {user && secondaryLinks.length > 0 && (
+              <div className="relative">
+                <button
+                  onClick={() => setShowMoreMenu(!showMoreMenu)}
+                  className={`text-sm font-medium transition-colors flex items-center gap-1 ${showMoreMenu || ['wallet', 'investments', 'credit', 'matching'].includes(currentPage) ? 'text-[#2467ec]' : 'text-[#6b7280] hover:text-[#12284b]'}`}
+                >
+                  <Menu className="w-4 h-4" />
+                  More
+                  <ChevronRight className={`w-3 h-3 transition-transform ${showMoreMenu ? 'rotate-90' : ''}`} />
+                </button>
+                {showMoreMenu && (
+                  <>
+                    <div className="fixed inset-0 z-40" onClick={() => setShowMoreMenu(false)} />
+                    <div className="absolute right-0 top-10 w-64 bg-white rounded-xl shadow-2xl border border-gray-100 z-50 overflow-hidden p-2">
+                      <div className="grid grid-cols-1 gap-1">
+                        {secondaryLinks.map((link) => (
+                          <button
+                            key={link.page}
+                            onClick={() => { setCurrentPage(link.page); setShowMoreMenu(false); }}
+                            className={`flex items-center gap-3 p-3 rounded-lg transition-colors text-left ${currentPage === link.page ? 'bg-[#2467ec]/10 text-[#2467ec]' : 'hover:bg-gray-50'}`}
+                          >
+                            <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${currentPage === link.page ? 'bg-[#2467ec]/20' : 'bg-gray-100'}`}>
+                              <link.icon className={`w-4 h-4 ${currentPage === link.page ? 'text-[#2467ec]' : 'text-[#6b7280]'}`} />
+                            </div>
+                            <div>
+                              <p className={`text-sm font-medium ${currentPage === link.page ? 'text-[#2467ec]' : 'text-[#12284b]'}`}>{link.label}</p>
+                              <p className="text-xs text-[#6b7280]">{link.desc}</p>
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
           </div>
 
           <div className="hidden lg:flex items-center gap-4">
@@ -735,12 +1057,13 @@ function Navigation({ currentPage, setCurrentPage, user }: { currentPage: string
       {mobileMenuOpen && (
         <div className="lg:hidden glass border-t">
           <div className="px-4 py-4 space-y-2">
-            {navLinks.map((link) => (
+            {allMobileLinks.map((link) => (
               <button
                 key={link.page}
                 onClick={() => { setCurrentPage(link.page); setMobileMenuOpen(false); }}
-                className={`block w-full text-left px-4 py-3 rounded-lg transition-colors ${currentPage === link.page ? 'bg-[#2467ec]/10 text-[#2467ec]' : 'text-[#6b7280] hover:bg-gray-50'}`}
+                className={`flex items-center gap-3 w-full text-left px-4 py-3 rounded-lg transition-colors ${currentPage === link.page ? 'bg-[#2467ec]/10 text-[#2467ec]' : 'text-[#6b7280] hover:bg-gray-50'}`}
               >
+                <link.icon className="w-4 h-4" />
                 {link.label}
               </button>
             ))}
@@ -1419,26 +1742,34 @@ function Dashboard({ user, setCurrentPage, navigateToCircle }: { user: User; set
               </CardContent>
             </Card>
 
-            {/* Organization */}
-            {user.organization && (
-              <Card className="border-0 shadow-lg cursor-pointer hover:shadow-xl transition-shadow" onClick={() => setCurrentPage('employer')}>
-                <CardContent className="p-6">
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="w-10 h-10 rounded-lg bg-[#2467ec]/10 flex items-center justify-center">
-                      <Building2 className="w-5 h-5 text-[#2467ec]" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-[#12284b]">{user.organization}</h3>
-                      <p className="text-xs text-[#6b7280]">Union Benefits Program · Active</p>
-                    </div>
+            {/* Communities */}
+            <Card className="border-0 shadow-lg cursor-pointer hover:shadow-xl transition-shadow" onClick={() => setCurrentPage('communities')}>
+              <CardContent className="p-6">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-10 h-10 rounded-lg bg-[#9b59b6]/10 flex items-center justify-center">
+                    <Globe className="w-5 h-5 text-[#9b59b6]" />
                   </div>
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-[#6b7280]">This month's match</span>
-                    <span className="font-medium text-[#1abc9c]">$150 of $200</span>
+                  <div>
+                    <h3 className="font-semibold text-[#12284b]">Your Communities</h3>
+                    <p className="text-xs text-[#6b7280]">{MOCK_COMMUNITIES.filter(c => c.isJoined).length} communities joined</p>
                   </div>
-                </CardContent>
-              </Card>
-            )}
+                </div>
+                <div className="space-y-2">
+                  {MOCK_COMMUNITIES.filter(c => c.isJoined).slice(0, 2).map(c => (
+                    <div key={c.id} className="flex items-center justify-between text-sm p-2 bg-[#f9fafb] rounded-lg">
+                      <div className="flex items-center gap-2">
+                        <Badge className={`text-xs ${c.type === 'public' ? 'bg-[#1abc9c]/10 text-[#1abc9c]' : 'bg-[#f39c12]/10 text-[#f39c12]'}`}>
+                          {c.type === 'public' ? 'Public' : 'Private'}
+                        </Badge>
+                        <span className="text-[#12284b]">{c.name}</span>
+                      </div>
+                      <span className="text-xs text-[#6b7280]">{c.memberCount} members</span>
+                    </div>
+                  ))}
+                </div>
+                <p className="text-xs text-[#2467ec] font-medium mt-3">Browse all communities →</p>
+              </CardContent>
+            </Card>
 
             {/* Marketplace Deals */}
             <Card className="border-0 shadow-lg">
@@ -1479,11 +1810,11 @@ function Dashboard({ user, setCurrentPage, navigateToCircle }: { user: User; set
                 <div className="grid grid-cols-2 gap-3">
                   {[
                     { icon: Plus, label: 'Add Money', action: () => setCurrentPage('add-money') },
-                    { icon: UserPlus, label: 'Invite Friend', action: () => setCurrentPage('invite') },
+                    { icon: Globe, label: 'Communities', action: () => setCurrentPage('communities') },
                     { icon: Award, label: 'Trust Score', action: () => setCurrentPage('credit') },
                     { icon: ShoppingBag, label: 'Marketplace', action: () => setCurrentPage('marketplace') },
                     { icon: TrendingUp, label: 'Investments', action: () => setCurrentPage('investments') },
-                    { icon: Settings, label: 'Settings', action: () => setCurrentPage('settings') },
+                    { icon: UserPlus, label: 'Invite Friend', action: () => setCurrentPage('invite') },
                   ].map((action, i) => (
                     <button key={i} onClick={action.action} className="p-4 bg-[#f9fafb] rounded-xl hover:bg-gray-100 transition-colors text-center">
                       <action.icon className="w-6 h-6 mx-auto mb-2 text-[#2467ec]" />
@@ -2492,166 +2823,1038 @@ function InvestmentsPage({ user, setCurrentPage: _setCurrentPage }: { user: User
   );
 }
 
-function OrganizationPage({ user, setCurrentPage }: { user: User; setCurrentPage: (page: string) => void }) {
-  const program = MOCK_EMPLOYER_PROGRAM;
+function CommunitiesPage({ setCurrentPage, navigateToCommunity }: { setCurrentPage: (page: string) => void; navigateToCommunity: (id: string) => void }) {
+  void setCurrentPage; // used for future navigation actions
+  const [filter, setFilter] = useState<'all' | 'joined' | 'public' | 'private'>('all');
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const filteredCommunities = MOCK_COMMUNITIES.filter(c => {
+    const matchesFilter = filter === 'all' || (filter === 'joined' && c.isJoined) || (filter === 'public' && c.type === 'public') || (filter === 'private' && c.type === 'private');
+    const matchesSearch = !searchQuery || c.name.toLowerCase().includes(searchQuery.toLowerCase()) || c.tags.some(t => t.toLowerCase().includes(searchQuery.toLowerCase()));
+    return matchesFilter && matchesSearch;
+  });
+
+  const categories = [...new Set(MOCK_COMMUNITIES.map(c => c.category))];
 
   return (
     <div className="min-h-screen bg-[#f9fafb] pt-24 pb-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center gap-4 mb-2">
-            <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-[#2467ec] to-[#1abc9c] flex items-center justify-center">
-              <Building2 className="w-7 h-7 text-white" />
-            </div>
-            <div>
-              <h1 className="text-3xl font-bold text-[#12284b] font-['Poppins']">{program.organizationName}</h1>
-              <div className="flex items-center gap-2 mt-1">
-                <Badge className="bg-[#2467ec]/10 text-[#2467ec]">{program.programType === 'union' ? 'Union Benefits Program' : 'Employer Benefits'}</Badge>
-                <Badge className="bg-[#1abc9c]/10 text-[#1abc9c]">Active</Badge>
-              </div>
-            </div>
+        <div className="flex flex-wrap items-start justify-between gap-4 mb-8">
+          <div>
+            <h1 className="text-3xl font-bold text-[#12284b] font-['Poppins']">Communities</h1>
+            <p className="text-[#6b7280]">Find your people, form your stacks, reach your goals together</p>
           </div>
-          <p className="text-[#6b7280]">Member since {program.enrolledSince.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</p>
+          <Button className="bg-[#2467ec] hover:bg-[#1a5fd4] rounded-full">
+            <Plus className="w-4 h-4 mr-2" />
+            Create Community
+          </Button>
         </div>
 
-        {/* Benefits grid */}
-        <div className="grid md:grid-cols-2 gap-6 mb-8">
-          <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow">
-            <CardContent className="p-6">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-12 h-12 rounded-xl bg-[#1abc9c]/10 flex items-center justify-center">
-                  <Gift className="w-6 h-6 text-[#1abc9c]" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-[#12284b]">Matched Savings</h3>
-                  <p className="text-sm text-[#6b7280]">Your organization matches your contributions</p>
-                </div>
-              </div>
-              <div className="p-4 bg-[#1abc9c]/5 rounded-xl mb-3">
-                <div className="flex justify-between mb-1">
-                  <span className="text-sm text-[#6b7280]">Match rate</span>
-                  <span className="font-bold text-[#1abc9c]">{program.matchPercentage}%</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-sm text-[#6b7280]">Up to</span>
-                  <span className="font-bold text-[#12284b]">${program.maxMatch}/month</span>
-                </div>
-              </div>
-              <div className="p-3 bg-[#f9fafb] rounded-lg">
-                <p className="text-xs text-[#6b7280]">This month's match</p>
-                <p className="text-lg font-bold text-[#1abc9c]">$150 <span className="text-xs font-normal text-[#6b7280]">of $200 max</span></p>
-              </div>
-            </CardContent>
-          </Card>
+        {/* Search & Filters */}
+        <div className="flex flex-wrap gap-4 mb-8">
+          <div className="relative flex-1 min-w-[240px]">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6b7280]" />
+            <Input
+              placeholder="Search communities by name or topic..."
+              value={searchQuery}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
+              className="pl-10 rounded-full border-gray-200"
+            />
+          </div>
+          <div className="flex gap-2">
+            {(['all', 'joined', 'public', 'private'] as const).map(f => (
+              <button
+                key={f}
+                onClick={() => setFilter(f)}
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${filter === f ? 'bg-[#2467ec] text-white' : 'bg-white text-[#6b7280] hover:bg-gray-100 border border-gray-200'}`}
+              >
+                {f === 'all' ? 'All' : f === 'joined' ? 'My Communities' : f === 'public' ? 'Public' : 'Private'}
+              </button>
+            ))}
+          </div>
+        </div>
 
-          <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow">
-            <CardContent className="p-6">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-12 h-12 rounded-xl bg-[#2467ec]/10 flex items-center justify-center">
-                  <Briefcase className="w-6 h-6 text-[#2467ec]" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-[#12284b]">Payroll Integration</h3>
-                  <p className="text-sm text-[#6b7280]">Auto-contribute from your paycheck</p>
-                </div>
-              </div>
-              <div className="flex items-center justify-between p-4 bg-[#2467ec]/5 rounded-xl mb-3">
-                <div>
-                  <p className="font-medium text-[#12284b]">Auto-contribute enabled</p>
-                  <p className="text-sm text-[#6b7280]">$300 per paycheck → Stack contributions</p>
-                </div>
-                <button className="w-12 h-6 rounded-full bg-[#2467ec] relative">
-                  <span className="absolute top-0.5 w-5 h-5 rounded-full bg-white shadow translate-x-6" />
+        {/* Browse by Category */}
+        <div className="mb-8">
+          <h2 className="text-lg font-semibold text-[#12284b] mb-4 font-['Poppins']">Browse by Category</h2>
+          <div className="flex flex-wrap gap-3">
+            {categories.map(cat => {
+              const count = MOCK_COMMUNITIES.filter(c => c.category === cat).length;
+              const catIcons: Record<string, typeof Users> = { Housing: Landmark, 'Emergency Savings': Shield, 'Debt Payoff': Target, Organization: Building2, Family: Heart, Business: Briefcase };
+              const CatIcon = catIcons[cat] || Globe;
+              return (
+                <button key={cat} onClick={() => setSearchQuery(cat)} className="flex items-center gap-2 px-4 py-2.5 bg-white rounded-xl border border-gray-200 hover:border-[#2467ec] hover:bg-[#2467ec]/5 transition-colors">
+                  <CatIcon className="w-4 h-4 text-[#2467ec]" />
+                  <span className="text-sm font-medium text-[#12284b]">{cat}</span>
+                  <Badge className="bg-gray-100 text-[#6b7280] text-xs">{count}</Badge>
                 </button>
-              </div>
-              <p className="text-xs text-[#6b7280]">Next contribution: March 1, 2024</p>
-            </CardContent>
-          </Card>
+              );
+            })}
+          </div>
+        </div>
 
-          <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow cursor-pointer" onClick={() => setCurrentPage('investments')}>
-            <CardContent className="p-6">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-12 h-12 rounded-xl bg-[#9b59b6]/10 flex items-center justify-center">
-                  <TrendingUp className="w-6 h-6 text-[#9b59b6]" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-[#12284b]">Retirement Stack</h3>
-                  <p className="text-sm text-[#6b7280]">Long-term collective savings</p>
-                </div>
-              </div>
-              <div className="text-center p-4 bg-[#9b59b6]/5 rounded-xl mb-3">
-                <p className="text-3xl font-bold text-[#9b59b6] font-['Poppins']">${(user.retirementBalance ?? 0).toLocaleString()}</p>
-                <p className="text-sm text-[#6b7280]">Your retirement balance</p>
-                <p className="text-xs text-[#1abc9c] mt-1">+$3,000 employer match</p>
-              </div>
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-[#6b7280]">Projected at retirement</span>
-                <span className="font-medium text-[#12284b]">$142,000</span>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow cursor-pointer" onClick={() => setCurrentPage('marketplace')}>
-            <CardContent className="p-6">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-12 h-12 rounded-xl bg-[#f39c12]/10 flex items-center justify-center">
-                  <ShoppingBag className="w-6 h-6 text-[#f39c12]" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-[#12284b]">Group Benefits</h3>
-                  <p className="text-sm text-[#6b7280]">Exclusive deals for members</p>
-                </div>
-              </div>
-              <div className="space-y-2 mb-3">
-                {MOCK_MARKETPLACE_OFFERS.slice(0, 3).map((offer) => {
-                  const discount = Math.round((1 - offer.groupPrice / offer.regularPrice) * 100);
-                  return (
-                    <div key={offer.id} className="flex items-center justify-between p-2 bg-[#f9fafb] rounded-lg">
-                      <span className="text-sm text-[#12284b]">{offer.name}</span>
-                      <Badge className="bg-[#1abc9c]/10 text-[#1abc9c] text-xs">-{discount}%</Badge>
+        {/* Communities Grid */}
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+          {filteredCommunities.map(community => (
+            <Card key={community.id} className="border-0 shadow-lg hover:shadow-xl transition-all cursor-pointer group" onClick={() => navigateToCommunity(community.id)}>
+              <CardContent className="p-6">
+                <div className="flex items-start justify-between mb-3">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${community.type === 'public' ? 'bg-[#1abc9c]/10' : 'bg-[#f39c12]/10'}`}>
+                      {community.type === 'public' ? <Globe className="w-6 h-6 text-[#1abc9c]" /> : <Lock className="w-6 h-6 text-[#f39c12]" />}
                     </div>
+                    <div>
+                      <h3 className="font-semibold text-[#12284b] group-hover:text-[#2467ec] transition-colors">{community.name}</h3>
+                      <Badge className={`text-xs mt-1 ${community.type === 'public' ? 'bg-[#1abc9c]/10 text-[#1abc9c]' : 'bg-[#f39c12]/10 text-[#f39c12]'}`}>
+                        {community.type === 'public' ? 'Public' : 'Private'}
+                      </Badge>
+                    </div>
+                  </div>
+                  {community.isJoined && (
+                    <Badge className="bg-[#2467ec]/10 text-[#2467ec] text-xs">Joined</Badge>
+                  )}
+                </div>
+
+                <p className="text-sm text-[#6b7280] mb-4 line-clamp-2">{community.description}</p>
+
+                <div className="flex flex-wrap gap-1.5 mb-4">
+                  {community.tags.slice(0, 3).map(tag => (
+                    <span key={tag} className="inline-flex items-center gap-1 text-xs px-2 py-1 bg-gray-100 rounded-full text-[#6b7280]">
+                      <Hash className="w-3 h-3" />{tag}
+                    </span>
+                  ))}
+                </div>
+
+                <Separator className="mb-4" />
+
+                <div className="grid grid-cols-3 gap-4 text-center">
+                  <div>
+                    <p className="text-lg font-bold text-[#12284b]">{community.memberCount}</p>
+                    <p className="text-xs text-[#6b7280]">Members</p>
+                  </div>
+                  <div>
+                    <p className="text-lg font-bold text-[#2467ec]">{community.activeStacks}</p>
+                    <p className="text-xs text-[#6b7280]">Active Stacks</p>
+                  </div>
+                  <div>
+                    <p className="text-lg font-bold text-[#1abc9c]">${(community.totalSaved / 1000).toFixed(0)}K</p>
+                    <p className="text-xs text-[#6b7280]">Total Saved</p>
+                  </div>
+                </div>
+
+                {community.matchmakingEnabled && (
+                  <div className="mt-4 flex items-center gap-2 p-2 bg-[#9b59b6]/5 rounded-lg">
+                    <Compass className="w-4 h-4 text-[#9b59b6]" />
+                    <span className="text-xs text-[#9b59b6] font-medium">Matchmaking available</span>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        {filteredCommunities.length === 0 && (
+          <div className="text-center py-12">
+            <Search className="w-12 h-12 mx-auto text-[#6b7280]/40 mb-4" />
+            <h3 className="text-lg font-medium text-[#12284b] mb-2">No communities found</h3>
+            <p className="text-[#6b7280]">Try adjusting your search or filters</p>
+          </div>
+        )}
+
+        {/* CTA */}
+        <Card className="border-0 shadow-lg bg-gradient-to-br from-[#2467ec] to-[#1abc9c]">
+          <CardContent className="p-8 text-center text-white">
+            <Compass className="w-10 h-10 mx-auto mb-3" />
+            <h3 className="text-xl font-bold mb-2 font-['Poppins']">Can't find what you're looking for?</h3>
+            <p className="text-white/80 mb-4 max-w-md mx-auto">Create your own community and invite others who share your savings goals.</p>
+            <Button variant="secondary" className="rounded-full bg-white text-[#2467ec] hover:bg-gray-100">
+              Start a Community
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+}
+
+function CommunityDetailPage({ communityId, setCurrentPage }: { communityId: string; setCurrentPage: (page: string) => void }) {
+  const community = MOCK_COMMUNITIES.find(c => c.id === communityId) || MOCK_COMMUNITIES[0];
+  const [activeTab, setActiveTab] = useState<'overview' | 'discussion' | 'members' | 'matchmaking' | 'governance'>('overview');
+  const [matchmakingStarted, setMatchmakingStarted] = useState(false);
+  const [selectedMatches, setSelectedMatches] = useState<string[]>([]);
+  const [newPostContent, setNewPostContent] = useState('');
+  const [newPostCategory, setNewPostCategory] = useState<PostCategory>('discussion');
+  const [expandedComments, setExpandedComments] = useState<string[]>([]);
+  const [replyingTo, setReplyingTo] = useState<string | null>(null);
+  const [replyContent, setReplyContent] = useState('');
+  const [posts, setPosts] = useState(MOCK_COMMUNITY_POSTS.filter(p => p.communityId === community.id));
+  const [postFilter, setPostFilter] = useState<'all' | PostCategory>('all');
+
+  const trustTierColors: Record<TrustTier, { bg: string; text: string }> = {
+    newcomer: { bg: 'bg-gray-100', text: 'text-gray-600' },
+    contributor: { bg: 'bg-blue-100', text: 'text-blue-600' },
+    reliable: { bg: 'bg-green-100', text: 'text-green-600' },
+    trusted: { bg: 'bg-purple-100', text: 'text-purple-600' },
+    pillar: { bg: 'bg-amber-100', text: 'text-amber-600' },
+  };
+
+  return (
+    <div className="min-h-screen bg-[#f9fafb] pt-24 pb-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Back button */}
+        <button onClick={() => setCurrentPage('communities')} className="flex items-center gap-2 text-[#6b7280] hover:text-[#12284b] mb-6">
+          <ChevronLeft className="w-4 h-4" />
+          Back to Communities
+        </button>
+
+        {/* Community Header */}
+        <div className="mb-8">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <div className={`w-16 h-16 rounded-2xl flex items-center justify-center ${community.type === 'public' ? 'bg-gradient-to-br from-[#1abc9c] to-[#16a085]' : 'bg-gradient-to-br from-[#f39c12] to-[#e67e22]'}`}>
+                {community.type === 'public' ? <Globe className="w-8 h-8 text-white" /> : <Lock className="w-8 h-8 text-white" />}
+              </div>
+              <div>
+                <h1 className="text-3xl font-bold text-[#12284b] font-['Poppins']">{community.name}</h1>
+                <div className="flex items-center gap-2 mt-1">
+                  <Badge className={`${community.type === 'public' ? 'bg-[#1abc9c]/10 text-[#1abc9c]' : 'bg-[#f39c12]/10 text-[#f39c12]'}`}>
+                    {community.type === 'public' ? 'Public Community' : 'Private Community'}
+                  </Badge>
+                  <Badge className="bg-gray-100 text-[#6b7280]">{community.category}</Badge>
+                  {community.matchmakingEnabled && <Badge className="bg-[#9b59b6]/10 text-[#9b59b6]">Matchmaking</Badge>}
+                </div>
+              </div>
+            </div>
+            {community.isJoined ? (
+              <Button variant="outline" className="rounded-full border-[#2467ec] text-[#2467ec]">
+                <CheckCircle className="w-4 h-4 mr-2" /> Member
+              </Button>
+            ) : (
+              <Button className="bg-[#2467ec] hover:bg-[#1a5fd4] rounded-full">
+                <UserPlus className="w-4 h-4 mr-2" /> Join Community
+              </Button>
+            )}
+          </div>
+          <p className="text-[#6b7280] mt-4 max-w-3xl">{community.description}</p>
+        </div>
+
+        {/* Stats Bar */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+          {[
+            { label: 'Members', value: community.memberCount.toString(), icon: Users, color: 'from-[#2467ec] to-[#1a5fd4]' },
+            { label: 'Active Stacks', value: community.activeStacks.toString(), icon: Target, color: 'from-[#1abc9c] to-[#16a085]' },
+            { label: 'Total Saved', value: `$${(community.totalSaved / 1000).toFixed(0)}K`, icon: PiggyBank, color: 'from-[#f39c12] to-[#e67e22]' },
+            { label: 'Governance', value: community.governanceModel === 'democratic' ? 'Democratic' : community.governanceModel === 'admin_led' ? 'Admin-Led' : 'Hybrid', icon: Gavel, color: 'from-[#9b59b6] to-[#8e44ad]' },
+          ].map((stat, i) => (
+            <Card key={i} className="border-0 shadow-lg">
+              <CardContent className="p-4 flex items-center gap-3">
+                <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${stat.color} flex items-center justify-center flex-shrink-0`}>
+                  <stat.icon className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <p className="text-lg font-bold text-[#12284b]">{stat.value}</p>
+                  <p className="text-xs text-[#6b7280]">{stat.label}</p>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        {/* Tabs */}
+        <div className="flex gap-1 mb-8 bg-white rounded-xl p-1 shadow-sm border border-gray-100 w-fit">
+          {(['overview', 'discussion', 'members', ...(community.matchmakingEnabled ? ['matchmaking'] : []), 'governance'] as const).map(tab => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab as typeof activeTab)}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${activeTab === tab ? 'bg-[#2467ec] text-white' : 'text-[#6b7280] hover:bg-gray-100'}`}
+            >
+              {tab === 'overview' ? 'Overview' : tab === 'discussion' ? 'Discussion' : tab === 'members' ? 'Members' : tab === 'matchmaking' ? 'Find Matches' : 'Governance'}
+            </button>
+          ))}
+        </div>
+
+        {/* Tab Content */}
+        {activeTab === 'overview' && (
+          <div className="grid lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2 space-y-6">
+              {/* Active Stacks in this community */}
+              <Card className="border-0 shadow-lg">
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle className="font-['Poppins']">Community Stacks</CardTitle>
+                      <CardDescription>Active savings stacks in this community</CardDescription>
+                    </div>
+                    <Button onClick={() => setCurrentPage('create-circle')} className="bg-[#2467ec] hover:bg-[#1a5fd4] rounded-full" size="sm">
+                      <Plus className="w-4 h-4 mr-1" /> Start Stack
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {[
+                      { name: 'Down Payment Savers — Portland', type: 'rosca' as CircleType, members: 5, amount: 800, progress: 45 },
+                      { name: 'FHA Loan Prep Group', type: 'goal_based' as CircleType, members: 4, amount: 500, progress: 62 },
+                      { name: 'First Home Sprint', type: 'savings_challenge' as CircleType, members: 6, amount: 300, progress: 30 },
+                    ].map((stack, i) => {
+                      const typeInfo = getCircleTypeInfo(stack.type);
+                      const TypeIcon = typeInfo.icon;
+                      return (
+                        <div key={i} className="p-4 bg-[#f9fafb] rounded-xl hover:bg-gray-100 transition-colors">
+                          <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center gap-3">
+                              <div className={`w-9 h-9 rounded-lg ${typeInfo.bg} flex items-center justify-center`}>
+                                <TypeIcon className={`w-4 h-4 ${typeInfo.text}`} />
+                              </div>
+                              <div>
+                                <h4 className="font-medium text-[#12284b] text-sm">{stack.name}</h4>
+                                <p className="text-xs text-[#6b7280]">{stack.members} members · ${stack.amount}/month</p>
+                              </div>
+                            </div>
+                            <Badge className={`${typeInfo.bg} ${typeInfo.text} text-xs`}>{typeInfo.label}</Badge>
+                          </div>
+                          <Progress value={stack.progress} className="h-1.5" />
+                        </div>
+                      );
+                    })}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Recent Activity */}
+              <Card className="border-0 shadow-lg">
+                <CardHeader>
+                  <CardTitle className="font-['Poppins']">Recent Activity</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {[
+                      { icon: UserPlus, text: 'Carlos Rivera joined the community', time: '2 hours ago', color: 'text-[#2467ec]' },
+                      { icon: Target, text: 'New stack "FHA Loan Prep Group" started', time: '1 day ago', color: 'text-[#1abc9c]' },
+                      { icon: Award, text: 'Maria Garcia reached Reliable trust tier', time: '2 days ago', color: 'text-[#f39c12]' },
+                      { icon: DollarSign, text: 'Down Payment Savers completed cycle 4', time: '3 days ago', color: 'text-[#9b59b6]' },
+                      { icon: Compass, text: '3 new matches found for your profile', time: '5 days ago', color: 'text-[#2467ec]' },
+                    ].map((activity, i) => (
+                      <div key={i} className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center flex-shrink-0">
+                          <activity.icon className={`w-4 h-4 ${activity.color}`} />
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-sm text-[#12284b]">{activity.text}</p>
+                          <p className="text-xs text-[#6b7280]">{activity.time}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            <div className="space-y-6">
+              {/* Tags */}
+              <Card className="border-0 shadow-lg">
+                <CardHeader>
+                  <CardTitle className="text-lg font-['Poppins']">Topics</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex flex-wrap gap-2">
+                    {community.tags.map(tag => (
+                      <span key={tag} className="inline-flex items-center gap-1 text-sm px-3 py-1.5 bg-[#2467ec]/5 rounded-full text-[#2467ec]">
+                        <Hash className="w-3 h-3" />{tag}
+                      </span>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Top Members */}
+              <Card className="border-0 shadow-lg">
+                <CardHeader>
+                  <CardTitle className="text-lg font-['Poppins']">Top Members</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {MOCK_COMMUNITY_MEMBERS.slice(0, 5).map((member) => (
+                      <div key={member.id} className="flex items-center gap-3">
+                        <Avatar className="w-9 h-9">
+                          <AvatarFallback className="bg-gradient-to-br from-[#2467ec] to-[#1abc9c] text-white text-xs">
+                            {member.name.split(' ').map(n => n[0]).join('')}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-[#12284b] truncate">{member.name}</p>
+                          <p className="text-xs text-[#6b7280]">{member.location}</p>
+                        </div>
+                        <Badge className={`${trustTierColors[member.trustTier].bg} ${trustTierColors[member.trustTier].text} text-xs`}>
+                          {member.trustTier}
+                        </Badge>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Matchmaking CTA */}
+              {community.matchmakingEnabled && (
+                <Card className="border-0 shadow-lg bg-gradient-to-br from-[#9b59b6] to-[#8e44ad]">
+                  <CardContent className="p-6 text-white">
+                    <Compass className="w-8 h-8 mb-3" />
+                    <h3 className="font-semibold mb-2">Find Your Stack Match</h3>
+                    <p className="text-white/80 text-sm mb-4">Our matchmaking agent finds compatible savers based on your goals, location, and timeline.</p>
+                    <Button variant="secondary" className="w-full rounded-full bg-white text-[#9b59b6] hover:bg-gray-100" onClick={() => setActiveTab('matchmaking')}>
+                      Start Matching
+                    </Button>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'discussion' && (
+          <div className="grid lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2 space-y-6">
+              {/* Create Post */}
+              <Card className="border-0 shadow-lg">
+                <CardContent className="p-6">
+                  <div className="flex gap-3">
+                    <Avatar className="w-10 h-10 flex-shrink-0">
+                      <AvatarFallback className="bg-gradient-to-br from-[#2467ec] to-[#1abc9c] text-white text-sm">AJ</AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1">
+                      <Textarea
+                        placeholder="Share a tip, ask a question, or celebrate a milestone..."
+                        value={newPostContent}
+                        onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setNewPostContent(e.target.value)}
+                        className="min-h-[80px] border-gray-200 rounded-xl resize-none mb-3"
+                      />
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          {(['discussion', 'tip', 'question', 'news', 'milestone'] as PostCategory[]).map(cat => {
+                            const catConfig: Record<PostCategory, { label: string; color: string }> = {
+                              discussion: { label: 'Discussion', color: 'bg-gray-100 text-gray-600' },
+                              tip: { label: 'Tip', color: 'bg-[#1abc9c]/10 text-[#1abc9c]' },
+                              question: { label: 'Question', color: 'bg-[#2467ec]/10 text-[#2467ec]' },
+                              news: { label: 'News', color: 'bg-[#f39c12]/10 text-[#f39c12]' },
+                              milestone: { label: 'Milestone', color: 'bg-[#9b59b6]/10 text-[#9b59b6]' },
+                            };
+                            return (
+                              <button
+                                key={cat}
+                                onClick={() => setNewPostCategory(cat)}
+                                className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${newPostCategory === cat ? catConfig[cat].color + ' ring-2 ring-offset-1 ring-current' : 'bg-gray-50 text-[#6b7280] hover:bg-gray-100'}`}
+                              >
+                                {catConfig[cat].label}
+                              </button>
+                            );
+                          })}
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <button className="p-2 text-[#6b7280] hover:text-[#12284b] hover:bg-gray-100 rounded-lg transition-colors">
+                            <Image className="w-4 h-4" />
+                          </button>
+                          <Button
+                            onClick={() => {
+                              if (newPostContent.trim()) {
+                                const newPost: CommunityPost = {
+                                  id: `post-new-${Date.now()}`,
+                                  authorName: 'Alex Johnson',
+                                  authorTrustTier: 'trusted',
+                                  authorRole: 'member',
+                                  content: newPostContent,
+                                  category: newPostCategory,
+                                  timestamp: new Date(),
+                                  likes: 0,
+                                  isLiked: false,
+                                  isPinned: false,
+                                  isBookmarked: false,
+                                  comments: [],
+                                  communityId: community.id,
+                                };
+                                setPosts([newPost, ...posts]);
+                                setNewPostContent('');
+                                setNewPostCategory('discussion');
+                              }
+                            }}
+                            className="bg-[#2467ec] hover:bg-[#1a5fd4] rounded-full px-4 h-9"
+                            disabled={!newPostContent.trim()}
+                          >
+                            <Send className="w-4 h-4 mr-1.5" />
+                            Post
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Filter Posts */}
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-sm text-[#6b7280] mr-1">Filter:</span>
+                {(['all', 'discussion', 'tip', 'question', 'news', 'milestone'] as const).map(f => {
+                  const filterLabels: Record<string, string> = { all: 'All Posts', discussion: 'Discussion', tip: 'Tips', question: 'Questions', news: 'News', milestone: 'Milestones' };
+                  return (
+                    <button
+                      key={f}
+                      onClick={() => setPostFilter(f)}
+                      className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${postFilter === f ? 'bg-[#2467ec] text-white' : 'bg-white text-[#6b7280] hover:bg-gray-100 border border-gray-200'}`}
+                    >
+                      {filterLabels[f]}
+                    </button>
                   );
                 })}
               </div>
-              <p className="text-xs text-[#2467ec] font-medium">View all marketplace deals →</p>
-            </CardContent>
-          </Card>
-        </div>
 
-        {/* Organization stats */}
-        <Card className="border-0 shadow-lg mb-8">
-          <CardHeader>
-            <CardTitle className="font-['Poppins']">Organization Overview</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid md:grid-cols-3 gap-6">
-              <div className="text-center p-4 bg-[#f9fafb] rounded-xl">
-                <p className="text-3xl font-bold text-[#2467ec] font-['Poppins']">{program.employeesEnrolled}</p>
-                <p className="text-sm text-[#6b7280]">Members Enrolled</p>
-              </div>
-              <div className="text-center p-4 bg-[#f9fafb] rounded-xl">
-                <p className="text-3xl font-bold text-[#1abc9c] font-['Poppins']">${(program.totalSaved / 1000).toFixed(0)}K</p>
-                <p className="text-sm text-[#6b7280]">Total Saved by Members</p>
-              </div>
-              <div className="text-center p-4 bg-[#f9fafb] rounded-xl">
-                <p className="text-3xl font-bold text-[#f39c12] font-['Poppins']">$350</p>
-                <p className="text-sm text-[#6b7280]">Avg. Monthly Savings</p>
-              </div>
+              {/* Posts Feed */}
+              {(() => {
+                const sortedPosts = [...posts].sort((a, b) => {
+                  if (a.isPinned && !b.isPinned) return -1;
+                  if (!a.isPinned && b.isPinned) return 1;
+                  return b.timestamp.getTime() - a.timestamp.getTime();
+                });
+                const filteredPosts = sortedPosts.filter(p => postFilter === 'all' || p.category === postFilter);
+
+                return filteredPosts.length === 0 ? (
+                  <div className="text-center py-12">
+                    <MessageCircle className="w-12 h-12 mx-auto text-[#6b7280]/30 mb-3" />
+                    <p className="text-[#6b7280]">No posts yet. Be the first to start a conversation!</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {filteredPosts.map(post => {
+                      const catConfig: Record<PostCategory, { label: string; bg: string; text: string; icon: typeof Star }> = {
+                        discussion: { label: 'Discussion', bg: 'bg-gray-100', text: 'text-gray-600', icon: MessageCircle },
+                        tip: { label: 'Tip', bg: 'bg-[#1abc9c]/10', text: 'text-[#1abc9c]', icon: Sparkles },
+                        question: { label: 'Question', bg: 'bg-[#2467ec]/10', text: 'text-[#2467ec]', icon: AlertTriangle },
+                        news: { label: 'News', bg: 'bg-[#f39c12]/10', text: 'text-[#f39c12]', icon: Globe },
+                        milestone: { label: 'Milestone', bg: 'bg-[#9b59b6]/10', text: 'text-[#9b59b6]', icon: Trophy },
+                      };
+                      const catInfo = catConfig[post.category];
+                      const CatIcon = catInfo.icon;
+                      const isExpanded = expandedComments.includes(post.id);
+                      const timeAgo = (date: Date) => {
+                        const diff = Date.now() - date.getTime();
+                        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                        if (days > 30) return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                        if (days > 0) return `${days}d ago`;
+                        const hours = Math.floor(diff / (1000 * 60 * 60));
+                        if (hours > 0) return `${hours}h ago`;
+                        return 'Just now';
+                      };
+
+                      return (
+                        <Card key={post.id} className={`border-0 shadow-lg ${post.isPinned ? 'ring-1 ring-[#f39c12]/30' : ''}`}>
+                          <CardContent className="p-6">
+                            {/* Pinned indicator */}
+                            {post.isPinned && (
+                              <div className="flex items-center gap-1.5 mb-3 text-[#f39c12]">
+                                <Pin className="w-3.5 h-3.5" />
+                                <span className="text-xs font-medium">Pinned by admin</span>
+                              </div>
+                            )}
+
+                            {/* Post Header */}
+                            <div className="flex items-start justify-between mb-3">
+                              <div className="flex items-center gap-3">
+                                <Avatar className="w-10 h-10">
+                                  <AvatarFallback className="bg-gradient-to-br from-[#2467ec] to-[#1abc9c] text-white text-sm">
+                                    {post.authorName.split(' ').map(n => n[0]).join('')}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <div>
+                                  <div className="flex items-center gap-2">
+                                    <span className="font-semibold text-[#12284b] text-sm">{post.authorName}</span>
+                                    <Badge className={`${trustTierColors[post.authorTrustTier].bg} ${trustTierColors[post.authorTrustTier].text} text-xs`}>
+                                      {post.authorTrustTier}
+                                    </Badge>
+                                    {post.authorRole !== 'member' && (
+                                      <Badge className={`text-xs ${post.authorRole === 'admin' ? 'bg-[#e74c3c]/10 text-[#e74c3c]' : 'bg-[#f39c12]/10 text-[#f39c12]'}`}>
+                                        {post.authorRole}
+                                      </Badge>
+                                    )}
+                                  </div>
+                                  <span className="text-xs text-[#6b7280]">{timeAgo(post.timestamp)}</span>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <Badge className={`${catInfo.bg} ${catInfo.text} text-xs`}>
+                                  <CatIcon className="w-3 h-3 mr-1" />
+                                  {catInfo.label}
+                                </Badge>
+                                <button className="p-1.5 text-[#6b7280] hover:text-[#12284b] hover:bg-gray-100 rounded-lg transition-colors">
+                                  <MoreHorizontal className="w-4 h-4" />
+                                </button>
+                              </div>
+                            </div>
+
+                            {/* Post Content */}
+                            <div className="mb-4">
+                              <p className="text-[#12284b] text-sm leading-relaxed whitespace-pre-line">{post.content}</p>
+                            </div>
+
+                            {/* Post Actions */}
+                            <div className="flex items-center justify-between pt-3 border-t border-gray-100">
+                              <div className="flex items-center gap-4">
+                                <button
+                                  onClick={() => {
+                                    setPosts(prev => prev.map(p => p.id === post.id ? { ...p, isLiked: !p.isLiked, likes: p.isLiked ? p.likes - 1 : p.likes + 1 } : p));
+                                  }}
+                                  className={`flex items-center gap-1.5 text-sm transition-colors ${post.isLiked ? 'text-[#2467ec] font-medium' : 'text-[#6b7280] hover:text-[#2467ec]'}`}
+                                >
+                                  <ThumbsUp className={`w-4 h-4 ${post.isLiked ? 'fill-[#2467ec]' : ''}`} />
+                                  {post.likes}
+                                </button>
+                                <button
+                                  onClick={() => setExpandedComments(prev => prev.includes(post.id) ? prev.filter(id => id !== post.id) : [...prev, post.id])}
+                                  className="flex items-center gap-1.5 text-sm text-[#6b7280] hover:text-[#2467ec] transition-colors"
+                                >
+                                  <MessageCircle className="w-4 h-4" />
+                                  {post.comments.length} {post.comments.length === 1 ? 'comment' : 'comments'}
+                                </button>
+                              </div>
+                              <button
+                                onClick={() => {
+                                  setPosts(prev => prev.map(p => p.id === post.id ? { ...p, isBookmarked: !p.isBookmarked } : p));
+                                }}
+                                className={`p-1.5 rounded-lg transition-colors ${post.isBookmarked ? 'text-[#f39c12]' : 'text-[#6b7280] hover:text-[#f39c12]'}`}
+                              >
+                                <Bookmark className={`w-4 h-4 ${post.isBookmarked ? 'fill-[#f39c12]' : ''}`} />
+                              </button>
+                            </div>
+
+                            {/* Comments Section */}
+                            {isExpanded && (
+                              <div className="mt-4 space-y-3">
+                                {post.comments.map(comment => (
+                                  <div key={comment.id} className="flex gap-2.5 pl-2">
+                                    <Avatar className="w-7 h-7 flex-shrink-0 mt-0.5">
+                                      <AvatarFallback className="bg-gray-200 text-[#6b7280] text-xs">
+                                        {comment.authorName.split(' ').map(n => n[0]).join('')}
+                                      </AvatarFallback>
+                                    </Avatar>
+                                    <div className="flex-1 bg-[#f9fafb] rounded-xl p-3">
+                                      <div className="flex items-center gap-2 mb-1">
+                                        <span className="text-sm font-medium text-[#12284b]">{comment.authorName}</span>
+                                        <Badge className={`${trustTierColors[comment.authorTrustTier].bg} ${trustTierColors[comment.authorTrustTier].text} text-[10px] px-1.5 py-0`}>
+                                          {comment.authorTrustTier}
+                                        </Badge>
+                                        <span className="text-xs text-[#6b7280]">{timeAgo(comment.timestamp)}</span>
+                                      </div>
+                                      <p className="text-sm text-[#12284b]">{comment.content}</p>
+                                      <div className="flex items-center gap-3 mt-2">
+                                        <button className={`flex items-center gap-1 text-xs transition-colors ${comment.isLiked ? 'text-[#2467ec]' : 'text-[#6b7280] hover:text-[#2467ec]'}`}>
+                                          <ThumbsUp className={`w-3 h-3 ${comment.isLiked ? 'fill-[#2467ec]' : ''}`} />
+                                          {comment.likes}
+                                        </button>
+                                        <button
+                                          onClick={() => { setReplyingTo(replyingTo === post.id ? null : post.id); setReplyContent(''); }}
+                                          className="flex items-center gap-1 text-xs text-[#6b7280] hover:text-[#2467ec] transition-colors"
+                                        >
+                                          <Reply className="w-3 h-3" /> Reply
+                                        </button>
+                                      </div>
+                                    </div>
+                                  </div>
+                                ))}
+
+                                {/* Reply Input */}
+                                <div className="flex gap-2.5 pl-2 pt-1">
+                                  <Avatar className="w-7 h-7 flex-shrink-0">
+                                    <AvatarFallback className="bg-gradient-to-br from-[#2467ec] to-[#1abc9c] text-white text-[10px]">AJ</AvatarFallback>
+                                  </Avatar>
+                                  <div className="flex-1 flex gap-2">
+                                    <Input
+                                      placeholder="Write a comment..."
+                                      value={replyingTo === post.id ? replyContent : ''}
+                                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => { setReplyingTo(post.id); setReplyContent(e.target.value); }}
+                                      onFocus={() => setReplyingTo(post.id)}
+                                      className="rounded-full text-sm h-8 border-gray-200"
+                                    />
+                                    <Button
+                                      size="sm"
+                                      className="rounded-full h-8 px-3 bg-[#2467ec]"
+                                      disabled={!replyContent.trim() || replyingTo !== post.id}
+                                      onClick={() => {
+                                        if (replyContent.trim()) {
+                                          const newComment: PostComment = {
+                                            id: `c-new-${Date.now()}`,
+                                            authorName: 'Alex Johnson',
+                                            authorTrustTier: 'trusted',
+                                            content: replyContent,
+                                            timestamp: new Date(),
+                                            likes: 0,
+                                            isLiked: false,
+                                          };
+                                          setPosts(prev => prev.map(p => p.id === post.id ? { ...p, comments: [...p.comments, newComment] } : p));
+                                          setReplyContent('');
+                                          setReplyingTo(null);
+                                        }
+                                      }}
+                                    >
+                                      <Send className="w-3 h-3" />
+                                    </Button>
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+                          </CardContent>
+                        </Card>
+                      );
+                    })}
+                  </div>
+                );
+              })()}
             </div>
-          </CardContent>
-        </Card>
 
-        {/* Trust notice */}
-        <div className="p-4 bg-[#2467ec]/5 rounded-xl border border-[#2467ec]/20">
-          <div className="flex items-start gap-3">
-            <Shield className="w-5 h-5 text-[#2467ec] flex-shrink-0 mt-0.5" />
-            <div>
-              <p className="font-medium text-[#12284b] text-sm">Your funds are always yours</p>
-              <p className="text-xs text-[#6b7280]">Your {program.programType === 'union' ? 'union' : 'employer'} facilitates access to Stacks as a member benefit. They cannot access or control your individual savings.</p>
+            {/* Sidebar */}
+            <div className="space-y-6">
+              {/* Community Guidelines */}
+              <Card className="border-0 shadow-lg">
+                <CardHeader>
+                  <CardTitle className="text-lg font-['Poppins']">Community Guidelines</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {[
+                      { icon: Heart, text: 'Be supportive and respectful' },
+                      { icon: Shield, text: 'No unqualified financial advice' },
+                      { icon: UserCheck, text: 'Share your real experiences' },
+                      { icon: Flag, text: 'Report harmful content' },
+                    ].map((rule, i) => (
+                      <div key={i} className="flex items-center gap-2.5 text-sm text-[#6b7280]">
+                        <rule.icon className="w-4 h-4 text-[#2467ec] flex-shrink-0" />
+                        {rule.text}
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Active Contributors */}
+              <Card className="border-0 shadow-lg">
+                <CardHeader>
+                  <CardTitle className="text-lg font-['Poppins']">Top Contributors</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {[
+                      { name: 'James Wilson', posts: 24, role: 'admin' as const },
+                      { name: 'Maria Garcia', posts: 18, role: 'moderator' as const },
+                      { name: 'Rachel Thompson', posts: 12, role: 'member' as const },
+                      { name: 'David Kim', posts: 9, role: 'member' as const },
+                    ].map((contributor, i) => (
+                      <div key={i} className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#2467ec] to-[#1abc9c] flex items-center justify-center text-white text-xs font-medium flex-shrink-0">
+                          {contributor.name.split(' ').map(n => n[0]).join('')}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-[#12284b] truncate">{contributor.name}</p>
+                          <p className="text-xs text-[#6b7280]">{contributor.posts} posts</p>
+                        </div>
+                        {contributor.role !== 'member' && (
+                          <Badge className={`text-[10px] ${contributor.role === 'admin' ? 'bg-[#e74c3c]/10 text-[#e74c3c]' : 'bg-[#f39c12]/10 text-[#f39c12]'}`}>
+                            {contributor.role}
+                          </Badge>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Popular Topics */}
+              <Card className="border-0 shadow-lg">
+                <CardHeader>
+                  <CardTitle className="text-lg font-['Poppins']">Trending Topics</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2">
+                    {[
+                      { topic: 'FHA loan tips', posts: 15 },
+                      { topic: 'Rate lock strategies', posts: 12 },
+                      { topic: 'First inspection', posts: 9 },
+                      { topic: 'Closing cost savings', posts: 7 },
+                      { topic: 'Portland market', posts: 6 },
+                    ].map((item, i) => (
+                      <button key={i} className="flex items-center justify-between w-full p-2.5 bg-[#f9fafb] rounded-lg hover:bg-gray-100 transition-colors">
+                        <div className="flex items-center gap-2">
+                          <Hash className="w-3.5 h-3.5 text-[#2467ec]" />
+                          <span className="text-sm text-[#12284b]">{item.topic}</span>
+                        </div>
+                        <span className="text-xs text-[#6b7280]">{item.posts} posts</span>
+                      </button>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
             </div>
           </div>
-        </div>
+        )}
+
+        {activeTab === 'members' && (
+          <div>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {MOCK_COMMUNITY_MEMBERS.map(member => (
+                <Card key={member.id} className="border-0 shadow-lg hover:shadow-xl transition-shadow">
+                  <CardContent className="p-5">
+                    <div className="flex items-center gap-3 mb-3">
+                      <Avatar className="w-11 h-11">
+                        <AvatarFallback className="bg-gradient-to-br from-[#2467ec] to-[#1abc9c] text-white text-sm">
+                          {member.name.split(' ').map(n => n[0]).join('')}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <p className="font-semibold text-[#12284b]">{member.name}</p>
+                          {member.role !== 'member' && (
+                            <Badge className={`text-xs ${member.role === 'admin' ? 'bg-[#e74c3c]/10 text-[#e74c3c]' : 'bg-[#f39c12]/10 text-[#f39c12]'}`}>
+                              {member.role}
+                            </Badge>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-1 text-xs text-[#6b7280]">
+                          <MapPin className="w-3 h-3" /> {member.location}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between mb-3">
+                      <Badge className={`${trustTierColors[member.trustTier].bg} ${trustTierColors[member.trustTier].text} text-xs`}>
+                        {member.trustTier}
+                      </Badge>
+                      <span className="text-xs text-[#6b7280]">Joined {member.joinedAt.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}</span>
+                    </div>
+                    <div className="p-3 bg-[#f9fafb] rounded-lg">
+                      <p className="text-xs text-[#6b7280] mb-1">Savings Goal</p>
+                      <p className="text-sm font-medium text-[#12284b]">{member.savingsGoal.purpose}</p>
+                      <div className="flex items-center justify-between mt-1">
+                        <span className="text-xs text-[#2467ec] font-medium">${member.savingsGoal.targetAmount.toLocaleString()}</span>
+                        <span className="text-xs text-[#6b7280]">by {member.savingsGoal.targetDate.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}</span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'matchmaking' && community.matchmakingEnabled && (
+          <div>
+            {!matchmakingStarted ? (
+              <Card className="border-0 shadow-xl max-w-2xl mx-auto">
+                <CardContent className="p-8 text-center">
+                  <div className="w-20 h-20 rounded-full bg-gradient-to-br from-[#9b59b6] to-[#8e44ad] flex items-center justify-center mx-auto mb-6">
+                    <Compass className="w-10 h-10 text-white" />
+                  </div>
+                  <h2 className="text-2xl font-bold text-[#12284b] mb-3 font-['Poppins']">Matchmaking Agent</h2>
+                  <p className="text-[#6b7280] mb-6 max-w-md mx-auto">
+                    Our AI-powered matchmaking agent analyzes your savings goals, location, timeline, and trust level to find the most compatible stack partners.
+                  </p>
+
+                  <div className="grid grid-cols-2 gap-4 mb-8 text-left">
+                    {[
+                      { icon: Target, title: 'Goal Alignment', desc: 'Matched by savings target and purpose' },
+                      { icon: MapPin, title: 'Location', desc: 'Prioritizes nearby savers' },
+                      { icon: Calendar, title: 'Timeline', desc: 'Syncs similar saving horizons' },
+                      { icon: Award, title: 'Trust Score', desc: 'Factors in reliability history' },
+                    ].map((feature, i) => (
+                      <div key={i} className="flex items-start gap-3 p-3 bg-[#f9fafb] rounded-xl">
+                        <feature.icon className="w-5 h-5 text-[#9b59b6] flex-shrink-0 mt-0.5" />
+                        <div>
+                          <p className="text-sm font-medium text-[#12284b]">{feature.title}</p>
+                          <p className="text-xs text-[#6b7280]">{feature.desc}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <Button onClick={() => setMatchmakingStarted(true)} className="bg-[#9b59b6] hover:bg-[#8e44ad] rounded-full px-8 h-12 text-base">
+                    <Zap className="w-5 h-5 mr-2" /> Find My Matches
+                  </Button>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-xl font-bold text-[#12284b] font-['Poppins']">Your Matches</h2>
+                    <p className="text-[#6b7280]">Based on your profile: $40K goal, 18-month timeline, Portland OR</p>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    {selectedMatches.length > 0 && (
+                      <Button onClick={() => setCurrentPage('create-circle')} className="bg-[#1abc9c] hover:bg-[#16a085] rounded-full">
+                        <Users className="w-4 h-4 mr-2" /> Form Stack ({selectedMatches.length} selected)
+                      </Button>
+                    )}
+                    <Button variant="outline" onClick={() => setMatchmakingStarted(false)} className="rounded-full">
+                      Re-run Match
+                    </Button>
+                  </div>
+                </div>
+
+                {MOCK_MATCH_PROFILES.map(match => (
+                  <Card key={match.id} className={`border-0 shadow-lg hover:shadow-xl transition-all ${selectedMatches.includes(match.id) ? 'ring-2 ring-[#2467ec]' : ''}`}>
+                    <CardContent className="p-6">
+                      <div className="flex flex-wrap items-start gap-6">
+                        <div className="flex items-center gap-4 flex-1 min-w-[200px]">
+                          <div className="relative">
+                            <Avatar className="w-14 h-14">
+                              <AvatarFallback className="bg-gradient-to-br from-[#2467ec] to-[#1abc9c] text-white">
+                                {match.name.split(' ').map(n => n[0]).join('')}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div className={`absolute -bottom-1 -right-1 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white ${match.compatibilityScore >= 90 ? 'bg-[#1abc9c]' : match.compatibilityScore >= 80 ? 'bg-[#2467ec]' : match.compatibilityScore >= 70 ? 'bg-[#f39c12]' : 'bg-[#6b7280]'}`}>
+                              {match.compatibilityScore}
+                            </div>
+                          </div>
+                          <div>
+                            <h3 className="font-semibold text-[#12284b] text-lg">{match.name}</h3>
+                            <div className="flex items-center gap-2 mt-1">
+                              <Badge className={`${trustTierColors[match.trustTier].bg} ${trustTierColors[match.trustTier].text} text-xs`}>
+                                {match.trustTier}
+                              </Badge>
+                              <span className="text-sm text-[#6b7280] flex items-center gap-1">
+                                <MapPin className="w-3 h-3" /> {match.location}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-3 gap-6 flex-1 min-w-[300px]">
+                          <div>
+                            <p className="text-xs text-[#6b7280]">Target</p>
+                            <p className="font-semibold text-[#12284b]">${match.targetAmount.toLocaleString()}</p>
+                          </div>
+                          <div>
+                            <p className="text-xs text-[#6b7280]">Timeline</p>
+                            <p className="font-semibold text-[#12284b]">{match.timeline}</p>
+                          </div>
+                          <div>
+                            <p className="text-xs text-[#6b7280]">Monthly</p>
+                            <p className="font-semibold text-[#12284b]">${match.monthlyContribution}</p>
+                          </div>
+                        </div>
+
+                        <button
+                          onClick={() => setSelectedMatches(prev => prev.includes(match.id) ? prev.filter(id => id !== match.id) : [...prev, match.id])}
+                          className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${selectedMatches.includes(match.id) ? 'bg-[#2467ec] text-white' : 'bg-gray-100 text-[#6b7280] hover:bg-[#2467ec]/10 hover:text-[#2467ec]'}`}
+                        >
+                          {selectedMatches.includes(match.id) ? 'Selected' : 'Select'}
+                        </button>
+                      </div>
+
+                      <div className="mt-4 flex flex-wrap gap-2">
+                        {match.matchReasons.map((reason, i) => (
+                          <span key={i} className="inline-flex items-center gap-1 text-xs px-2.5 py-1 bg-[#1abc9c]/10 text-[#1abc9c] rounded-full">
+                            <CheckCircle className="w-3 h-3" /> {reason}
+                          </span>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {activeTab === 'governance' && (
+          <div className="grid lg:grid-cols-2 gap-8">
+            <Card className="border-0 shadow-lg">
+              <CardHeader>
+                <CardTitle className="font-['Poppins']">Governance Model</CardTitle>
+                <CardDescription>How decisions are made in this community</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="p-4 bg-[#2467ec]/5 rounded-xl">
+                    <div className="flex items-center gap-3 mb-2">
+                      <Gavel className="w-5 h-5 text-[#2467ec]" />
+                      <h4 className="font-semibold text-[#12284b]">
+                        {community.governanceModel === 'democratic' ? 'Democratic Governance' : community.governanceModel === 'admin_led' ? 'Admin-Led Governance' : 'Hybrid Governance'}
+                      </h4>
+                    </div>
+                    <p className="text-sm text-[#6b7280]">
+                      {community.governanceModel === 'democratic'
+                        ? 'All members have equal voting rights. Decisions require majority approval.'
+                        : community.governanceModel === 'admin_led'
+                        ? 'Admins make decisions with input from moderators. Members can submit proposals.'
+                        : 'A mix of admin oversight and member voting. Key decisions require community vote.'}
+                    </p>
+                  </div>
+
+                  {[
+                    { title: 'New member approval', desc: community.type === 'private' ? 'Admin approval required' : 'Open to all', icon: UserCheck },
+                    { title: 'Stack creation', desc: 'Any member can start a stack', icon: Plus },
+                    { title: 'Community rules', desc: 'Voted on by active members', icon: Flag },
+                    { title: 'Dispute resolution', desc: 'Handled by moderators with appeal process', icon: Shield },
+                  ].map((rule, i) => (
+                    <div key={i} className="flex items-start gap-3 p-3 bg-[#f9fafb] rounded-lg">
+                      <rule.icon className="w-5 h-5 text-[#2467ec] flex-shrink-0 mt-0.5" />
+                      <div>
+                        <p className="font-medium text-sm text-[#12284b]">{rule.title}</p>
+                        <p className="text-xs text-[#6b7280]">{rule.desc}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="border-0 shadow-lg">
+              <CardHeader>
+                <CardTitle className="font-['Poppins']">Community Leadership</CardTitle>
+                <CardDescription>Admins and moderators</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {MOCK_COMMUNITY_MEMBERS.filter(m => m.role !== 'member').map(member => (
+                    <div key={member.id} className="flex items-center gap-4 p-4 bg-[#f9fafb] rounded-xl">
+                      <Avatar className="w-12 h-12">
+                        <AvatarFallback className="bg-gradient-to-br from-[#2467ec] to-[#1abc9c] text-white">
+                          {member.name.split(' ').map(n => n[0]).join('')}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1">
+                        <p className="font-semibold text-[#12284b]">{member.name}</p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <Badge className={`text-xs ${member.role === 'admin' ? 'bg-[#e74c3c]/10 text-[#e74c3c]' : 'bg-[#f39c12]/10 text-[#f39c12]'}`}>
+                            {member.role}
+                          </Badge>
+                          <span className="text-xs text-[#6b7280]">{member.location}</span>
+                        </div>
+                      </div>
+                      <Button variant="outline" size="sm" className="rounded-full">
+                        <MessageCircle className="w-3 h-3 mr-1" /> Message
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {community.requirements && (
+              <Card className="border-0 shadow-lg lg:col-span-2">
+                <CardHeader>
+                  <CardTitle className="font-['Poppins']">Requirements</CardTitle>
+                  <CardDescription>What you need to join this community</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex flex-wrap gap-4">
+                    {community.requirements.map((req, i) => (
+                      <div key={i} className="flex items-center gap-2 p-3 bg-[#f9fafb] rounded-lg">
+                        <CheckCircle className="w-4 h-4 text-[#1abc9c]" />
+                        <span className="text-sm text-[#12284b]">{req}</span>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -3927,6 +5130,7 @@ function App() {
   const [user, setUser] = useState<User | undefined>(undefined);
   const [viewingUserId, setViewingUserId] = useState<string | null>(null);
   const [selectedCircleId, setSelectedCircleId] = useState<string>('1');
+  const [selectedCommunityId, setSelectedCommunityId] = useState<string>('c1');
 
   const handleLogin = () => {
     setUser(MOCK_USER);
@@ -3935,6 +5139,11 @@ function App() {
   const navigateToCircle = (circleId: string) => {
     setSelectedCircleId(circleId);
     setCurrentPage('circle-detail');
+  };
+
+  const navigateToCommunity = (communityId: string) => {
+    setSelectedCommunityId(communityId);
+    setCurrentPage('community-detail');
   };
 
   const renderPage = () => {
@@ -3967,8 +5176,10 @@ function App() {
         return <InvestmentsPage user={user!} setCurrentPage={setCurrentPage} />;
       case 'marketplace':
         return <MarketplacePage setCurrentPage={setCurrentPage} />;
-      case 'employer':
-        return user ? <OrganizationPage user={user} setCurrentPage={setCurrentPage} /> : <LandingPage setCurrentPage={setCurrentPage} />;
+      case 'communities':
+        return <CommunitiesPage setCurrentPage={setCurrentPage} navigateToCommunity={navigateToCommunity} />;
+      case 'community-detail':
+        return <CommunityDetailPage communityId={selectedCommunityId} setCurrentPage={setCurrentPage} />;
       case 'matching':
         return <MatchingFundsPage setCurrentPage={setCurrentPage} />;
       case 'demographics':
