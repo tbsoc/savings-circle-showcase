@@ -285,15 +285,15 @@ type CommunityPost = {
 // Mock Data
 const MOCK_USER: User = {
   id: '1',
-  name: 'Alex Johnson',
-  email: 'alex@example.com',
+  name: 'Diego Ramirez',
+  email: 'diego@example.com',
   trustTier: 'trusted',
   trustProgress: 72,
   totalSaved: 12500,
   circlesJoined: 8,
   circlesCompleted: 3,
   verificationLevel: 'verified',
-  organization: 'West Coast Workers Collective',
+  organization: 'Cooperativa de Ahorro Guadalajara',
   investmentBalance: 4200,
   retirementBalance: 8500,
 };
@@ -305,7 +305,7 @@ const MOCK_CIRCLES: SavingsCircle[] = [
     type: 'rosca',
     description: 'Monthly savings with family members',
     members: [
-      { id: '1', userId: '1', name: 'Alex Johnson', position: 1, hasReceivedPayout: true, payoutAmount: 2000, joinedAt: new Date('2024-01-01') },
+      { id: '1', userId: '1', name: 'Diego Ramirez', position: 1, hasReceivedPayout: true, payoutAmount: 2000, joinedAt: new Date('2024-01-01') },
       { id: '2', userId: '2', name: 'Sarah Smith', position: 2, hasReceivedPayout: false, joinedAt: new Date('2024-01-01') },
       { id: '3', userId: '3', name: 'Mike Brown', position: 3, hasReceivedPayout: false, joinedAt: new Date('2024-01-01') },
       { id: '4', userId: '4', name: 'Emma Wilson', position: 4, hasReceivedPayout: false, joinedAt: new Date('2024-01-01') },
@@ -329,7 +329,7 @@ const MOCK_CIRCLES: SavingsCircle[] = [
     type: 'chit_fund',
     description: 'Monthly auction-based savings pool',
     members: [
-      { id: '5', userId: '1', name: 'Alex Johnson', position: 1, hasReceivedPayout: false, joinedAt: new Date('2024-01-15') },
+      { id: '5', userId: '1', name: 'Diego Ramirez', position: 1, hasReceivedPayout: false, joinedAt: new Date('2024-01-15') },
       { id: '6', userId: '2', name: 'Sarah Smith', position: 2, hasReceivedPayout: true, payoutAmount: 4250, joinedAt: new Date('2024-01-15') },
       { id: '7', userId: '7', name: 'Raj Patel', position: 3, hasReceivedPayout: false, joinedAt: new Date('2024-01-15') },
       { id: '8', userId: '8', name: 'Priya Sharma', position: 4, hasReceivedPayout: false, joinedAt: new Date('2024-01-15') },
@@ -361,7 +361,7 @@ const MOCK_CIRCLES: SavingsCircle[] = [
     type: 'savings_challenge',
     description: 'Race to save $2,000 by summer',
     members: [
-      { id: '10', userId: '1', name: 'Alex Johnson', position: 1, hasReceivedPayout: false, joinedAt: new Date('2024-03-01') },
+      { id: '10', userId: '1', name: 'Diego Ramirez', position: 1, hasReceivedPayout: false, joinedAt: new Date('2024-03-01') },
       { id: '11', userId: '2', name: 'Sarah Smith', position: 2, hasReceivedPayout: false, joinedAt: new Date('2024-03-01') },
       { id: '12', userId: '3', name: 'Mike Brown', position: 3, hasReceivedPayout: false, joinedAt: new Date('2024-03-01') },
       { id: '13', userId: '10', name: 'Olivia Davis', position: 4, hasReceivedPayout: false, joinedAt: new Date('2024-03-01') },
@@ -379,7 +379,7 @@ const MOCK_CIRCLES: SavingsCircle[] = [
     challengeEndDate: new Date('2024-07-20'),
     memberProgress: [
       { userId: '2', name: 'Sarah Smith', amountSaved: 950, streak: 8 },
-      { userId: '1', name: 'Alex Johnson', amountSaved: 800, streak: 6 },
+      { userId: '1', name: 'Diego Ramirez', amountSaved: 800, streak: 6 },
       { userId: '10', name: 'Olivia Davis', amountSaved: 750, streak: 5 },
       { userId: '3', name: 'Mike Brown', amountSaved: 700, streak: 4 },
     ],
@@ -392,7 +392,7 @@ const MOCK_CIRCLES: SavingsCircle[] = [
     type: 'emergency_fund',
     description: 'Building emergency savings together',
     members: [
-      { id: '14', userId: '1', name: 'Alex Johnson', position: 1, hasReceivedPayout: false, joinedAt: new Date('2024-02-01') },
+      { id: '14', userId: '1', name: 'Diego Ramirez', position: 1, hasReceivedPayout: false, joinedAt: new Date('2024-02-01') },
       { id: '15', userId: '5', name: 'Lisa Chen', position: 2, hasReceivedPayout: false, joinedAt: new Date('2024-02-01') },
       { id: '16', userId: '6', name: 'David Park', position: 3, hasReceivedPayout: false, joinedAt: new Date('2024-02-01') },
     ],
@@ -422,7 +422,7 @@ const MOCK_CIRCLES: SavingsCircle[] = [
     type: 'goal_based',
     description: 'Saving for a group trip to Costa Rica',
     members: [
-      { id: '17', userId: '1', name: 'Alex Johnson', position: 1, hasReceivedPayout: false, joinedAt: new Date('2024-02-15') },
+      { id: '17', userId: '1', name: 'Diego Ramirez', position: 1, hasReceivedPayout: false, joinedAt: new Date('2024-02-15') },
       { id: '18', userId: '2', name: 'Sarah Smith', position: 2, hasReceivedPayout: false, joinedAt: new Date('2024-02-15') },
       { id: '19', userId: '11', name: 'Jordan Lee', position: 3, hasReceivedPayout: false, joinedAt: new Date('2024-02-15') },
     ],
@@ -448,7 +448,7 @@ const MOCK_CIRCLES: SavingsCircle[] = [
     type: 'rosca',
     description: 'Completed holiday savings stack',
     members: [
-      { id: '20', userId: '1', name: 'Alex Johnson', position: 1, hasReceivedPayout: true, payoutAmount: 1500, joinedAt: new Date('2023-06-01') },
+      { id: '20', userId: '1', name: 'Diego Ramirez', position: 1, hasReceivedPayout: true, payoutAmount: 1500, joinedAt: new Date('2023-06-01') },
       { id: '21', userId: '2', name: 'Sarah Smith', position: 2, hasReceivedPayout: true, payoutAmount: 1500, joinedAt: new Date('2023-06-01') },
       { id: '22', userId: '3', name: 'Mike Brown', position: 3, hasReceivedPayout: true, payoutAmount: 1500, joinedAt: new Date('2023-06-01') },
     ],
@@ -469,7 +469,7 @@ const MOCK_CIRCLES: SavingsCircle[] = [
     type: 'savings_challenge',
     description: 'Starting in January — race to save $1,500',
     members: [
-      { id: '23', userId: '1', name: 'Alex Johnson', position: 1, hasReceivedPayout: false, joinedAt: new Date('2024-12-15') },
+      { id: '23', userId: '1', name: 'Diego Ramirez', position: 1, hasReceivedPayout: false, joinedAt: new Date('2024-12-15') },
       { id: '24', userId: '10', name: 'Olivia Davis', position: 2, hasReceivedPayout: false, joinedAt: new Date('2024-12-16') },
     ],
     contributionAmount: 75,
@@ -492,7 +492,7 @@ const MOCK_CIRCLES: SavingsCircle[] = [
     type: 'emergency_fund',
     description: 'Decommissioned — not enough members joined',
     members: [
-      { id: '25', userId: '1', name: 'Alex Johnson', position: 1, hasReceivedPayout: false, joinedAt: new Date('2023-09-01') },
+      { id: '25', userId: '1', name: 'Diego Ramirez', position: 1, hasReceivedPayout: false, joinedAt: new Date('2023-09-01') },
       { id: '26', userId: '6', name: 'David Park', position: 2, hasReceivedPayout: false, joinedAt: new Date('2023-09-01') },
     ],
     contributionAmount: 200,
@@ -707,18 +707,18 @@ const MOCK_COMMUNITIES: Community[] = [
   },
   {
     id: 'c4',
-    name: 'West Coast Workers Collective',
+    name: 'Cooperativa de Ahorro Guadalajara',
     type: 'private',
-    description: 'Exclusive savings community for members of the West Coast Workers Collective. Access matched savings and group benefits.',
+    description: 'Comunidad exclusiva de ahorro para miembros de la Cooperativa de Ahorro Guadalajara. Access matched savings, group benefits, and tanda-style stacks.',
     category: 'Organization',
     memberCount: 142,
     activeStacks: 8,
     totalSaved: 284000,
     createdAt: new Date('2024-01-15'),
-    tags: ['union', 'employer match', 'payroll'],
+    tags: ['cooperativa', 'tanda', 'ahorro colectivo'],
     isJoined: true,
     governanceModel: 'admin_led',
-    requirements: ['Must be a member of West Coast Workers Collective', 'Valid employee ID required'],
+    requirements: ['Must be a member of Cooperativa de Ahorro Guadalajara', 'Valid member credential required'],
     matchmakingEnabled: false,
   },
   {
@@ -754,7 +754,7 @@ const MOCK_COMMUNITIES: Community[] = [
 ];
 
 const MOCK_COMMUNITY_MEMBERS: CommunityMember[] = [
-  { id: 'cm1', name: 'Alex Johnson', trustTier: 'trusted', joinedAt: new Date('2024-01-05'), role: 'member', location: 'Portland, OR', savingsGoal: { targetAmount: 40000, targetDate: new Date('2026-06-01'), purpose: 'Down payment on a 2BR condo' } },
+  { id: 'cm1', name: 'Diego Ramirez', trustTier: 'trusted', joinedAt: new Date('2024-01-05'), role: 'member', location: 'Guadalajara, MX', savingsGoal: { targetAmount: 40000, targetDate: new Date('2026-06-01'), purpose: 'Down payment on a 2BR condo' } },
   { id: 'cm2', name: 'Maria Garcia', trustTier: 'reliable', joinedAt: new Date('2024-01-10'), role: 'moderator', location: 'Los Angeles, CA', savingsGoal: { targetAmount: 50000, targetDate: new Date('2026-01-01'), purpose: 'Down payment — single family home' } },
   { id: 'cm3', name: 'James Wilson', trustTier: 'pillar', joinedAt: new Date('2024-01-02'), role: 'admin', location: 'Seattle, WA', savingsGoal: { targetAmount: 60000, targetDate: new Date('2025-12-01'), purpose: 'Down payment + closing costs' } },
   { id: 'cm4', name: 'Aisha Patel', trustTier: 'contributor', joinedAt: new Date('2024-02-15'), role: 'member', location: 'Portland, OR', savingsGoal: { targetAmount: 35000, targetDate: new Date('2026-09-01'), purpose: 'FHA loan down payment' } },
@@ -787,7 +787,7 @@ const MOCK_COMMUNITY_POSTS: CommunityPost[] = [
     isBookmarked: false,
     comments: [
       { id: 'c1', authorName: 'Maria Garcia', authorTrustTier: 'reliable', content: 'Thanks for setting this up James! Excited to be here.', timestamp: new Date('2024-01-02'), likes: 12, isLiked: false },
-      { id: 'c2', authorName: 'Alex Johnson', authorTrustTier: 'trusted', content: 'Great community. Looking forward to connecting with other Portland savers!', timestamp: new Date('2024-01-05'), likes: 8, isLiked: true },
+      { id: 'c2', authorName: 'Diego Ramirez', authorTrustTier: 'trusted', content: 'Great community. Looking forward to connecting with other savers!', timestamp: new Date('2024-01-05'), likes: 8, isLiked: true },
     ],
     communityId: 'c1',
   },
@@ -879,7 +879,7 @@ const MOCK_COMMUNITY_POSTS: CommunityPost[] = [
     isBookmarked: false,
     comments: [
       { id: 'c13', authorName: 'Aisha Patel', authorTrustTier: 'contributor', content: 'I\'m interested! Just matched with you through the matchmaking tool actually. Let\'s connect!', timestamp: new Date('2024-04-05'), likes: 4, isLiked: false },
-      { id: 'c14', authorName: 'Alex Johnson', authorTrustTier: 'trusted', content: 'Count me in too - I\'m Portland based and saving for the same timeline.', timestamp: new Date('2024-04-06'), likes: 3, isLiked: false },
+      { id: 'c14', authorName: 'Diego Ramirez', authorTrustTier: 'trusted', content: 'Count me in too - saving for the same timeline. Let\'s do it!', timestamp: new Date('2024-04-06'), likes: 3, isLiked: false },
     ],
     communityId: 'c1',
   },
@@ -3220,7 +3220,7 @@ function CommunityDetailPage({ communityId, setCurrentPage }: { communityId: str
                 <CardContent className="p-6">
                   <div className="flex gap-3">
                     <Avatar className="w-10 h-10 flex-shrink-0">
-                      <AvatarFallback className="bg-gradient-to-br from-[#2467ec] to-[#1abc9c] text-white text-sm">AJ</AvatarFallback>
+                      <AvatarFallback className="bg-gradient-to-br from-[#2467ec] to-[#1abc9c] text-white text-sm">DR</AvatarFallback>
                     </Avatar>
                     <div className="flex-1">
                       <Textarea
@@ -3259,7 +3259,7 @@ function CommunityDetailPage({ communityId, setCurrentPage }: { communityId: str
                               if (newPostContent.trim()) {
                                 const newPost: CommunityPost = {
                                   id: `post-new-${Date.now()}`,
-                                  authorName: 'Alex Johnson',
+                                  authorName: 'Diego Ramirez',
                                   authorTrustTier: 'trusted',
                                   authorRole: 'member',
                                   content: newPostContent,
@@ -3462,7 +3462,7 @@ function CommunityDetailPage({ communityId, setCurrentPage }: { communityId: str
                                 {/* Reply Input */}
                                 <div className="flex gap-2.5 pl-2 pt-1">
                                   <Avatar className="w-7 h-7 flex-shrink-0">
-                                    <AvatarFallback className="bg-gradient-to-br from-[#2467ec] to-[#1abc9c] text-white text-[10px]">AJ</AvatarFallback>
+                                    <AvatarFallback className="bg-gradient-to-br from-[#2467ec] to-[#1abc9c] text-white text-[10px]">DR</AvatarFallback>
                                   </Avatar>
                                   <div className="flex-1 flex gap-2">
                                     <Input
@@ -3480,7 +3480,7 @@ function CommunityDetailPage({ communityId, setCurrentPage }: { communityId: str
                                         if (replyContent.trim()) {
                                           const newComment: PostComment = {
                                             id: `c-new-${Date.now()}`,
-                                            authorName: 'Alex Johnson',
+                                            authorName: 'Diego Ramirez',
                                             authorTrustTier: 'trusted',
                                             content: replyContent,
                                             timestamp: new Date(),
