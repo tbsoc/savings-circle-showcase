@@ -244,6 +244,8 @@ type CommunityMember = {
   role: 'member' | 'moderator' | 'admin';
   location: string;
   savingsGoal: { targetAmount: number; targetDate: Date; purpose: string };
+  communityId: string;
+  department?: string;
 };
 
 type MatchProfile = {
@@ -764,14 +766,26 @@ const MOCK_COMMUNITIES: Community[] = [
 ];
 
 const MOCK_COMMUNITY_MEMBERS: CommunityMember[] = [
-  { id: 'cm1', name: 'Diego Ramirez', trustTier: 'trusted', joinedAt: new Date('2024-01-05'), role: 'member', location: 'Guadalajara, MX', savingsGoal: { targetAmount: 40000, targetDate: new Date('2026-06-01'), purpose: 'Down payment on a 2BR condo' } },
-  { id: 'cm2', name: 'Maria Garcia', trustTier: 'reliable', joinedAt: new Date('2024-01-10'), role: 'moderator', location: 'Los Angeles, CA', savingsGoal: { targetAmount: 50000, targetDate: new Date('2026-01-01'), purpose: 'Down payment — single family home' } },
-  { id: 'cm3', name: 'James Wilson', trustTier: 'pillar', joinedAt: new Date('2024-01-02'), role: 'admin', location: 'Seattle, WA', savingsGoal: { targetAmount: 60000, targetDate: new Date('2025-12-01'), purpose: 'Down payment + closing costs' } },
-  { id: 'cm4', name: 'Aisha Patel', trustTier: 'contributor', joinedAt: new Date('2024-02-15'), role: 'member', location: 'Portland, OR', savingsGoal: { targetAmount: 35000, targetDate: new Date('2026-09-01'), purpose: 'FHA loan down payment' } },
-  { id: 'cm5', name: 'David Kim', trustTier: 'trusted', joinedAt: new Date('2024-01-20'), role: 'member', location: 'San Francisco, CA', savingsGoal: { targetAmount: 80000, targetDate: new Date('2027-01-01'), purpose: 'Down payment in Bay Area' } },
-  { id: 'cm6', name: 'Rachel Thompson', trustTier: 'reliable', joinedAt: new Date('2024-03-01'), role: 'member', location: 'Denver, CO', savingsGoal: { targetAmount: 30000, targetDate: new Date('2025-08-01'), purpose: '10% down on starter home' } },
-  { id: 'cm7', name: 'Carlos Rivera', trustTier: 'newcomer', joinedAt: new Date('2024-04-10'), role: 'member', location: 'Austin, TX', savingsGoal: { targetAmount: 45000, targetDate: new Date('2026-03-01'), purpose: 'Down payment — new construction' } },
-  { id: 'cm8', name: 'Priya Sharma', trustTier: 'contributor', joinedAt: new Date('2024-02-28'), role: 'member', location: 'Portland, OR', savingsGoal: { targetAmount: 38000, targetDate: new Date('2026-06-01'), purpose: 'First home — townhouse' } },
+  // First-Time Homebuyers (c1)
+  { id: 'cm1', name: 'Diego Ramirez', trustTier: 'trusted', joinedAt: new Date('2024-01-05'), role: 'member', location: 'Guadalajara, MX', savingsGoal: { targetAmount: 40000, targetDate: new Date('2026-06-01'), purpose: 'Down payment on a 2BR condo' }, communityId: 'c1' },
+  { id: 'cm2', name: 'Maria Garcia', trustTier: 'reliable', joinedAt: new Date('2024-01-10'), role: 'moderator', location: 'Los Angeles, CA', savingsGoal: { targetAmount: 50000, targetDate: new Date('2026-01-01'), purpose: 'Down payment — single family home' }, communityId: 'c1' },
+  { id: 'cm3', name: 'James Wilson', trustTier: 'pillar', joinedAt: new Date('2024-01-02'), role: 'admin', location: 'Seattle, WA', savingsGoal: { targetAmount: 60000, targetDate: new Date('2025-12-01'), purpose: 'Down payment + closing costs' }, communityId: 'c1' },
+  { id: 'cm4', name: 'Aisha Patel', trustTier: 'contributor', joinedAt: new Date('2024-02-15'), role: 'member', location: 'Portland, OR', savingsGoal: { targetAmount: 35000, targetDate: new Date('2026-09-01'), purpose: 'FHA loan down payment' }, communityId: 'c1' },
+  { id: 'cm5', name: 'David Kim', trustTier: 'trusted', joinedAt: new Date('2024-01-20'), role: 'member', location: 'San Francisco, CA', savingsGoal: { targetAmount: 80000, targetDate: new Date('2027-01-01'), purpose: 'Down payment in Bay Area' }, communityId: 'c1' },
+  { id: 'cm6', name: 'Rachel Thompson', trustTier: 'reliable', joinedAt: new Date('2024-03-01'), role: 'member', location: 'Denver, CO', savingsGoal: { targetAmount: 30000, targetDate: new Date('2025-08-01'), purpose: '10% down on starter home' }, communityId: 'c1' },
+  { id: 'cm7', name: 'Carlos Rivera', trustTier: 'newcomer', joinedAt: new Date('2024-04-10'), role: 'member', location: 'Austin, TX', savingsGoal: { targetAmount: 45000, targetDate: new Date('2026-03-01'), purpose: 'Down payment — new construction' }, communityId: 'c1' },
+  { id: 'cm8', name: 'Priya Sharma', trustTier: 'contributor', joinedAt: new Date('2024-02-28'), role: 'member', location: 'Portland, OR', savingsGoal: { targetAmount: 38000, targetDate: new Date('2026-06-01'), purpose: 'First home — townhouse' }, communityId: 'c1' },
+  // Grupo Financiero del Bajío (c4)
+  { id: 'cm-gfb1', name: 'Ana Lucía Mendoza', trustTier: 'pillar', joinedAt: new Date('2024-01-15'), role: 'admin', location: 'Guadalajara, JAL', savingsGoal: { targetAmount: 100000, targetDate: new Date('2026-01-01'), purpose: 'Personal savings' }, communityId: 'c4', department: 'Human Resources' },
+  { id: 'cm-gfb2', name: 'Diego Ramirez', trustTier: 'trusted', joinedAt: new Date('2024-01-20'), role: 'member', location: 'Guadalajara, JAL', savingsGoal: { targetAmount: 48000, targetDate: new Date('2026-06-01'), purpose: 'Personal savings' }, communityId: 'c4', department: 'Engineering' },
+  { id: 'cm-gfb3', name: 'Sofía Herrera', trustTier: 'reliable', joinedAt: new Date('2024-01-18'), role: 'moderator', location: 'Zapopan, JAL', savingsGoal: { targetAmount: 60000, targetDate: new Date('2025-12-01'), purpose: 'Personal savings' }, communityId: 'c4', department: 'Operations' },
+  { id: 'cm-gfb4', name: 'Roberto Vázquez', trustTier: 'reliable', joinedAt: new Date('2024-02-01'), role: 'member', location: 'Guadalajara, JAL', savingsGoal: { targetAmount: 55000, targetDate: new Date('2026-03-01'), purpose: 'Personal savings' }, communityId: 'c4', department: 'Sales' },
+  { id: 'cm-gfb5', name: 'Fernando Castillo', trustTier: 'contributor', joinedAt: new Date('2024-02-15'), role: 'member', location: 'Tlaquepaque, JAL', savingsGoal: { targetAmount: 30000, targetDate: new Date('2025-09-01'), purpose: 'Personal savings' }, communityId: 'c4', department: 'Marketing' },
+  { id: 'cm-gfb6', name: 'Mariana López', trustTier: 'newcomer', joinedAt: new Date('2024-03-20'), role: 'member', location: 'Tonalá, JAL', savingsGoal: { targetAmount: 25000, targetDate: new Date('2026-01-01'), purpose: 'Personal savings' }, communityId: 'c4', department: 'Customer Support' },
+  { id: 'cm-gfb7', name: 'Gabriela Torres', trustTier: 'contributor', joinedAt: new Date('2024-02-10'), role: 'member', location: 'Guadalajara, JAL', savingsGoal: { targetAmount: 45000, targetDate: new Date('2026-06-01'), purpose: 'Personal savings' }, communityId: 'c4', department: 'Finance' },
+  { id: 'cm-gfb8', name: 'Alejandro Morales', trustTier: 'trusted', joinedAt: new Date('2024-01-25'), role: 'member', location: 'Zapopan, JAL', savingsGoal: { targetAmount: 70000, targetDate: new Date('2026-09-01'), purpose: 'Personal savings' }, communityId: 'c4', department: 'Engineering' },
+  { id: 'cm-gfb9', name: 'Valentina Ruiz', trustTier: 'reliable', joinedAt: new Date('2024-02-05'), role: 'member', location: 'Guadalajara, JAL', savingsGoal: { targetAmount: 40000, targetDate: new Date('2025-12-01'), purpose: 'Personal savings' }, communityId: 'c4', department: 'Legal' },
+  { id: 'cm-gfb10', name: 'Javier Delgado', trustTier: 'newcomer', joinedAt: new Date('2024-04-01'), role: 'member', location: 'Tlajomulco, JAL', savingsGoal: { targetAmount: 35000, targetDate: new Date('2026-06-01'), purpose: 'Personal savings' }, communityId: 'c4', department: 'Operations' },
 ];
 
 const MOCK_MATCH_PROFILES: MatchProfile[] = [
@@ -3341,7 +3355,7 @@ function CommunityDetailPage({ communityId, setCurrentPage }: { communityId: str
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
-                    {MOCK_COMMUNITY_MEMBERS.slice(0, 5).map((member) => (
+                    {MOCK_COMMUNITY_MEMBERS.filter(m => m.communityId === community.id).slice(0, 5).map((member) => (
                       <div key={member.id} className="flex items-center gap-3">
                         <Avatar className="w-9 h-9">
                           <AvatarFallback className="bg-gradient-to-br from-[#2467ec] to-[#1abc9c] text-white text-xs">
@@ -3350,7 +3364,7 @@ function CommunityDetailPage({ communityId, setCurrentPage }: { communityId: str
                         </Avatar>
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium text-[#12284b] truncate">{member.name}</p>
-                          <p className="text-xs text-[#6b7280]">{member.location}</p>
+                          <p className="text-xs text-[#6b7280]">{community.type === 'private' && member.department ? member.department : member.location}</p>
                         </div>
                         <Badge className={`${trustTierColors[member.trustTier].bg} ${trustTierColors[member.trustTier].text} text-xs`}>
                           {member.trustTier}
@@ -3762,7 +3776,7 @@ function CommunityDetailPage({ communityId, setCurrentPage }: { communityId: str
         {activeTab === 'members' && (
           <div>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {MOCK_COMMUNITY_MEMBERS.map(member => (
+              {MOCK_COMMUNITY_MEMBERS.filter(m => m.communityId === community.id).map(member => (
                 <Card key={member.id} className="border-0 shadow-lg hover:shadow-xl transition-shadow">
                   <CardContent className="p-5">
                     <div className="flex items-center gap-3 mb-3">
@@ -3791,14 +3805,25 @@ function CommunityDetailPage({ communityId, setCurrentPage }: { communityId: str
                       </Badge>
                       <span className="text-xs text-[#6b7280]">Joined {member.joinedAt.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}</span>
                     </div>
-                    <div className="p-3 bg-[#f9fafb] rounded-lg">
-                      <p className="text-xs text-[#6b7280] mb-1">Savings Goal</p>
-                      <p className="text-sm font-medium text-[#12284b]">{member.savingsGoal.purpose}</p>
-                      <div className="flex items-center justify-between mt-1">
-                        <span className="text-xs text-[#2467ec] font-medium">${member.savingsGoal.targetAmount.toLocaleString()}</span>
-                        <span className="text-xs text-[#6b7280]">by {member.savingsGoal.targetDate.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}</span>
+                    {community.type === 'private' ? (
+                      <div className="p-3 bg-[#f9fafb] rounded-lg">
+                        {member.department && (
+                          <div className="flex items-center gap-2">
+                            <Briefcase className="w-3.5 h-3.5 text-[#6b7280]" />
+                            <span className="text-sm text-[#12284b]">{member.department}</span>
+                          </div>
+                        )}
                       </div>
-                    </div>
+                    ) : (
+                      <div className="p-3 bg-[#f9fafb] rounded-lg">
+                        <p className="text-xs text-[#6b7280] mb-1">Savings Goal</p>
+                        <p className="text-sm font-medium text-[#12284b]">{member.savingsGoal.purpose}</p>
+                        <div className="flex items-center justify-between mt-1">
+                          <span className="text-xs text-[#2467ec] font-medium">${member.savingsGoal.targetAmount.toLocaleString()}</span>
+                          <span className="text-xs text-[#6b7280]">by {member.savingsGoal.targetDate.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}</span>
+                        </div>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               ))}
@@ -3976,7 +4001,7 @@ function CommunityDetailPage({ communityId, setCurrentPage }: { communityId: str
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {MOCK_COMMUNITY_MEMBERS.filter(m => m.role !== 'member').map(member => (
+                  {MOCK_COMMUNITY_MEMBERS.filter(m => m.communityId === community.id && m.role !== 'member').map(member => (
                     <div key={member.id} className="flex items-center gap-4 p-4 bg-[#f9fafb] rounded-xl">
                       <Avatar className="w-12 h-12">
                         <AvatarFallback className="bg-gradient-to-br from-[#2467ec] to-[#1abc9c] text-white">
