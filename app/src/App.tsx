@@ -140,6 +140,9 @@ type MarketplaceOffer = {
   minGroupSize: number;
   currentInterest: number;
   expiresAt?: Date;
+  escrowTotal: number;
+  escrowTarget: number;
+  committed: number;
 };
 
 type GroupInvestment = {
@@ -532,11 +535,11 @@ const MOCK_YIELD_OPPORTUNITIES: YieldOpportunity[] = [
 ];
 
 const MOCK_MARKETPLACE_OFFERS: MarketplaceOffer[] = [
-  { id: 'm1', vendor: 'NordVPN', category: 'subscriptions', name: 'NordVPN Group Plan', description: '2-year plan with group discount', regularPrice: 11.99, groupPrice: 4.99, minGroupSize: 10, currentInterest: 14 },
-  { id: 'm2', vendor: 'Amazon', category: 'gift_cards', name: 'Amazon Gift Card Bundle', description: '$100 face value gift cards at group rate', regularPrice: 100, groupPrice: 88, minGroupSize: 5, currentInterest: 23 },
-  { id: 'm3', vendor: 'Coursera', category: 'education', name: 'Coursera Plus Annual', description: 'Unlimited access to 7,000+ courses', regularPrice: 59, groupPrice: 29, minGroupSize: 8, currentInterest: 11 },
-  { id: 'm4', vendor: 'OpenAI', category: 'services', name: 'AI Credits Bundle', description: 'Bulk API credits for ChatGPT & tools', regularPrice: 200, groupPrice: 140, minGroupSize: 15, currentInterest: 8 },
-  { id: 'm5', vendor: 'Bread Cooperative', category: 'services', name: 'Safety Net Insurance', description: 'Cooperative mutual aid coverage', regularPrice: 45, groupPrice: 30, minGroupSize: 20, currentInterest: 31 },
+  { id: 'm1', vendor: 'NordVPN', category: 'subscriptions', name: 'NordVPN Group Plan', description: '2-year plan with group discount. Funds held in escrow until 10 people commit.', regularPrice: 11.99, groupPrice: 4.99, minGroupSize: 10, currentInterest: 14, escrowTotal: 69.86, escrowTarget: 49.90, committed: 14 },
+  { id: 'm2', vendor: 'Amazon', category: 'gift_cards', name: 'Amazon Gift Card Bundle', description: '$100 face value gift cards at group rate. Your money stays in escrow until the group fills.', regularPrice: 100, groupPrice: 88, minGroupSize: 5, currentInterest: 23, escrowTotal: 2024, escrowTarget: 440, committed: 23 },
+  { id: 'm3', vendor: 'Coursera', category: 'education', name: 'Coursera Plus Annual', description: 'Unlimited access to 7,000+ courses. Escrow releases once 8 learners commit.', regularPrice: 59, groupPrice: 29, minGroupSize: 8, currentInterest: 11, escrowTotal: 319, escrowTarget: 232, committed: 11 },
+  { id: 'm4', vendor: 'OpenAI', category: 'services', name: 'AI Credits Bundle', description: 'Bulk API credits for ChatGPT & tools. Group price kicks in at 15 buyers.', regularPrice: 200, groupPrice: 140, minGroupSize: 15, currentInterest: 8, escrowTotal: 1120, escrowTarget: 2100, committed: 8 },
+  { id: 'm5', vendor: 'Bread Cooperative', category: 'services', name: 'Safety Net Insurance', description: 'Cooperative mutual aid coverage. Escrow-backed group policy activates at 20 members.', regularPrice: 45, groupPrice: 30, minGroupSize: 20, currentInterest: 31, escrowTotal: 930, escrowTarget: 600, committed: 31 },
 ];
 
 const MOCK_GROUP_INVESTMENTS: GroupInvestment[] = [
@@ -1029,6 +1032,7 @@ function Navigation({ currentPage, setCurrentPage, user }: { currentPage: string
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [showMoreMenu, setShowMoreMenu] = useState(false);
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 50);
@@ -1160,19 +1164,51 @@ function Navigation({ currentPage, setCurrentPage, user }: { currentPage: string
                     </div>
                   )}
                 </div>
-                <button onClick={() => setCurrentPage('profile')} className="flex items-center gap-3 hover:bg-gray-50 rounded-full pr-4 pl-1 py-1 transition-colors">
-                  <Avatar className="w-8 h-8 border-2 border-[#2467ec]">
-                    <AvatarImage src={user.avatar} />
-                    <AvatarFallback className="bg-gradient-to-br from-[#2467ec] to-[#1abc9c] text-white text-sm">
-                      {user.name.split(' ').map(n => n[0]).join('')}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="text-left">
-                    <span className="text-sm font-medium text-[#12284b] block">{user.name.split(' ')[0]}</span>
-                    <span className="text-xs text-[#1abc9c] font-medium">$3,923 </span>
-                    <span className="text-xs text-[#6b7280]">· $2,500 cash</span>
-                  </div>
-                </button>
+                <div className="relative">
+                  <button onClick={() => setShowProfileMenu(!showProfileMenu)} className="flex items-center gap-3 hover:bg-gray-50 rounded-full pr-4 pl-1 py-1 transition-colors">
+                    <Avatar className="w-8 h-8 border-2 border-[#2467ec]">
+                      <AvatarImage src={user.avatar} />
+                      <AvatarFallback className="bg-gradient-to-br from-[#2467ec] to-[#1abc9c] text-white text-sm">
+                        {user.name.split(' ').map(n => n[0]).join('')}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="text-left">
+                      <span className="text-sm font-medium text-[#12284b] block">{user.name.split(' ')[0]}</span>
+                      <span className="text-xs text-[#1abc9c] font-medium">$3,923 </span>
+                      <span className="text-xs text-[#6b7280]">· $2,500 cash</span>
+                    </div>
+                  </button>
+                  {showProfileMenu && (
+                    <>
+                      <div className="fixed inset-0 z-40" onClick={() => setShowProfileMenu(false)} />
+                      <div className="absolute right-0 top-12 w-56 bg-white rounded-xl shadow-2xl border border-gray-100 z-50 overflow-hidden p-1.5">
+                        {[
+                          { label: 'Profile', icon: Settings, page: 'profile' },
+                          { label: 'Wallet', icon: Wallet as React.FC<{ className?: string }>, page: 'wallet' },
+                          { label: 'Trust Score', icon: Award, page: 'credit' },
+                        ].map(item => (
+                          <button
+                            key={item.page}
+                            onClick={() => { setCurrentPage(item.page); setShowProfileMenu(false); }}
+                            className="flex items-center gap-3 w-full p-3 rounded-lg hover:bg-gray-50 transition-colors text-left"
+                          >
+                            <item.icon className="w-4 h-4 text-[#6b7280]" />
+                            <span className="text-sm text-[#12284b]">{item.label}</span>
+                          </button>
+                        ))}
+                        <div className="border-t border-gray-100 mt-1 pt-1">
+                          <button
+                            onClick={() => { setCurrentPage('landing'); setShowProfileMenu(false); }}
+                            className="flex items-center gap-3 w-full p-3 rounded-lg hover:bg-gray-50 transition-colors text-left"
+                          >
+                            <LogOut className="w-4 h-4 text-[#e74c3c]" />
+                            <span className="text-sm text-[#e74c3c]">Log Out</span>
+                          </button>
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </div>
               </div>
             ) : (
               <>
@@ -2654,18 +2690,26 @@ function MarketplacePage({ setCurrentPage }: { setCurrentPage: (page: string) =>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-[#12284b] font-['Poppins']">Marketplace</h1>
-          <p className="text-[#6b7280]">Unlock group discounts and collective purchasing power</p>
+          <p className="text-[#6b7280]">Group buying powered by escrow — commit your funds, and when enough people buy in, everyone gets the discount</p>
         </div>
 
-        {/* Featured banner */}
-        <div className="mb-6 p-5 bg-gradient-to-r from-[#9b59b6] to-[#8e44ad] rounded-2xl text-white cursor-pointer hover:opacity-95 transition-opacity" onClick={() => setCurrentPage('investments')}>
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-white/70 text-sm mb-1">Featured</p>
-              <h3 className="text-xl font-bold font-['Poppins']">Collective Investment Opportunities</h3>
-              <p className="text-white/80 text-sm mt-1">Pool with your stack to invest together in digital assets, real estate, and more</p>
-            </div>
-            <ArrowRight className="w-6 h-6 flex-shrink-0" />
+        {/* How it works banner */}
+        <div className="mb-8 p-5 bg-gradient-to-r from-[#2467ec]/5 to-[#1abc9c]/5 rounded-2xl border border-[#2467ec]/10">
+          <h3 className="font-semibold text-[#12284b] mb-3 font-['Poppins']">How Escrow Group Buys Work</h3>
+          <div className="grid sm:grid-cols-3 gap-4">
+            {[
+              { step: '1', title: 'Commit Funds', desc: 'Put your money in escrow for the group price. It stays safe until the deal closes.', icon: Lock },
+              { step: '2', title: 'Group Fills Up', desc: 'Once enough buyers commit to hit the minimum group size, the deal activates.', icon: Users },
+              { step: '3', title: 'Deal Goes Through', desc: 'Escrow releases, everyone gets the discounted price. If it doesn\'t fill, you get your money back.', icon: CheckCircle },
+            ].map(item => (
+              <div key={item.step} className="flex items-start gap-3">
+                <div className="w-8 h-8 rounded-full bg-[#2467ec] text-white flex items-center justify-center text-sm font-bold flex-shrink-0">{item.step}</div>
+                <div>
+                  <p className="font-medium text-[#12284b] text-sm">{item.title}</p>
+                  <p className="text-xs text-[#6b7280] mt-0.5">{item.desc}</p>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
 
@@ -2685,14 +2729,19 @@ function MarketplacePage({ setCurrentPage }: { setCurrentPage: (page: string) =>
             <div className="grid sm:grid-cols-2 gap-4">
               {filtered.map((offer) => {
                 const discount = Math.round((1 - offer.groupPrice / offer.regularPrice) * 100);
+                const escrowProgress = Math.min(100, Math.round((offer.committed / offer.minGroupSize) * 100));
+                const isFilled = offer.committed >= offer.minGroupSize;
                 return (
-                  <Card key={offer.id} className="border-0 shadow-lg hover:shadow-xl transition-shadow">
+                  <Card key={offer.id} className={`border-0 shadow-lg hover:shadow-xl transition-shadow ${isFilled ? 'ring-1 ring-[#1abc9c]/30' : ''}`}>
                     <CardContent className="p-5">
                       <div className="flex items-start justify-between mb-3">
                         <div>
-                          <Badge className={`text-xs mb-2 ${offer.category === 'subscriptions' ? 'bg-[#2467ec]/10 text-[#2467ec]' : offer.category === 'gift_cards' ? 'bg-[#f39c12]/10 text-[#f39c12]' : offer.category === 'education' ? 'bg-[#9b59b6]/10 text-[#9b59b6]' : 'bg-[#1abc9c]/10 text-[#1abc9c]'}`}>
-                            {offer.category === 'gift_cards' ? 'Gift Cards' : offer.category.charAt(0).toUpperCase() + offer.category.slice(1)}
-                          </Badge>
+                          <div className="flex items-center gap-2 mb-2">
+                            <Badge className={`text-xs ${offer.category === 'subscriptions' ? 'bg-[#2467ec]/10 text-[#2467ec]' : offer.category === 'gift_cards' ? 'bg-[#f39c12]/10 text-[#f39c12]' : offer.category === 'education' ? 'bg-[#9b59b6]/10 text-[#9b59b6]' : 'bg-[#1abc9c]/10 text-[#1abc9c]'}`}>
+                              {offer.category === 'gift_cards' ? 'Gift Cards' : offer.category.charAt(0).toUpperCase() + offer.category.slice(1)}
+                            </Badge>
+                            {isFilled && <Badge className="bg-[#1abc9c]/10 text-[#1abc9c] text-xs">Ready to Go</Badge>}
+                          </div>
                           <h4 className="font-semibold text-[#12284b]">{offer.name}</h4>
                           <p className="text-xs text-[#6b7280]">{offer.vendor}</p>
                         </div>
@@ -2706,13 +2755,26 @@ function MarketplacePage({ setCurrentPage }: { setCurrentPage: (page: string) =>
                           <span className="text-xs text-[#6b7280]">{offer.category === 'subscriptions' || offer.category === 'services' ? '/mo' : ''}</span>
                         </div>
                       </div>
-                      <div className="flex items-center justify-between text-xs text-[#6b7280] mb-3">
-                        <span>{offer.minGroupSize} members needed</span>
-                        <span className="text-[#2467ec] font-medium">{offer.currentInterest} interested</span>
+
+                      {/* Escrow Progress */}
+                      <div className="mb-3">
+                        <div className="flex items-center justify-between text-xs mb-1">
+                          <span className="text-[#6b7280]">{offer.committed} of {offer.minGroupSize} committed</span>
+                          <span className={`font-medium ${isFilled ? 'text-[#1abc9c]' : 'text-[#2467ec]'}`}>{escrowProgress}%</span>
+                        </div>
+                        <Progress value={escrowProgress} className="h-2" />
+                        <div className="flex items-center gap-1 mt-1.5">
+                          <Lock className="w-3 h-3 text-[#6b7280]" />
+                          <span className="text-xs text-[#6b7280]">${offer.escrowTotal.toLocaleString()} held in escrow</span>
+                        </div>
                       </div>
-                      <Button className="w-full bg-[#2467ec] hover:bg-[#1a5fd4] rounded-full text-sm">
-                        <ShoppingBag className="w-3 h-3 mr-2" />
-                        Join Group Buy
+
+                      <Button className={`w-full rounded-full text-sm ${isFilled ? 'bg-[#1abc9c] hover:bg-[#16a085]' : 'bg-[#2467ec] hover:bg-[#1a5fd4]'}`}>
+                        {isFilled ? (
+                          <><CheckCircle className="w-3 h-3 mr-2" />Claim Your Deal</>
+                        ) : (
+                          <><Lock className="w-3 h-3 mr-2" />Commit ${offer.groupPrice} to Escrow</>
+                        )}
                       </Button>
                     </CardContent>
                   </Card>
@@ -2725,28 +2787,40 @@ function MarketplacePage({ setCurrentPage }: { setCurrentPage: (page: string) =>
           <div className="space-y-6">
             <Card className="border-0 shadow-lg">
               <CardHeader>
-                <CardTitle className="font-['Poppins']">Your Group Power</CardTitle>
+                <CardTitle className="font-['Poppins']">Your Activity</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
                   <div className="flex justify-between text-sm">
-                    <span className="text-[#6b7280]">Members across stacks</span>
-                    <span className="font-medium text-[#12284b]">19</span>
-                  </div>
-                  <Separator />
-                  <div className="flex justify-between text-sm">
-                    <span className="text-[#6b7280]">Collective purchasing power</span>
-                    <span className="font-medium text-[#1abc9c]">$15,600</span>
-                  </div>
-                  <Separator />
-                  <div className="flex justify-between text-sm">
-                    <span className="text-[#6b7280]">Active group buys</span>
+                    <span className="text-[#6b7280]">Active commitments</span>
                     <span className="font-medium text-[#12284b]">2</span>
                   </div>
                   <Separator />
                   <div className="flex justify-between text-sm">
-                    <span className="text-[#6b7280]">Saved from group purchases</span>
+                    <span className="text-[#6b7280]">In escrow</span>
+                    <span className="font-medium text-[#f39c12]">$117.99</span>
+                  </div>
+                  <Separator />
+                  <div className="flex justify-between text-sm">
+                    <span className="text-[#6b7280]">Completed group buys</span>
+                    <span className="font-medium text-[#12284b]">3</span>
+                  </div>
+                  <Separator />
+                  <div className="flex justify-between text-sm">
+                    <span className="text-[#6b7280]">Total saved</span>
                     <span className="font-medium text-[#1abc9c]">$340</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="border-0 shadow-lg">
+              <CardContent className="p-6">
+                <div className="flex items-start gap-3">
+                  <Shield className="w-5 h-5 text-[#2467ec] flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="font-medium text-[#12284b] text-sm">Escrow Protection</p>
+                    <p className="text-xs text-[#6b7280] mt-1">Your funds are held in a secure escrow smart contract. If the group doesn't reach the minimum size, you get a full refund automatically.</p>
                   </div>
                 </div>
               </CardContent>
@@ -2756,11 +2830,11 @@ function MarketplacePage({ setCurrentPage }: { setCurrentPage: (page: string) =>
               <CardContent className="p-6 text-white">
                 <div className="flex items-center gap-2 mb-3">
                   <Users className="w-5 h-5" />
-                  <span className="font-semibold">Bigger Group = Bigger Savings</span>
+                  <span className="font-semibold">Share & Save More</span>
                 </div>
-                <p className="text-white/80 text-sm mb-4">Invite more members to your stacks to unlock better group pricing on marketplace deals.</p>
-                <Button variant="secondary" className="w-full rounded-full bg-white text-[#2467ec] hover:bg-gray-100">
-                  Invite Members
+                <p className="text-white/80 text-sm mb-4">Share deals with friends and communities. More people = faster activation and bigger savings.</p>
+                <Button variant="secondary" className="w-full rounded-full bg-white text-[#2467ec] hover:bg-gray-100" onClick={() => setCurrentPage('communities')}>
+                  Share with Communities
                 </Button>
               </CardContent>
             </Card>
@@ -3089,12 +3163,9 @@ function CommunitiesPage({ setCurrentPage, navigateToCommunity }: { setCurrentPa
                     </div>
                   )}
                   {community.matchingFunds && (
-                    <div className="flex items-center justify-between p-2 bg-[#1abc9c]/5 rounded-lg">
-                      <div className="flex items-center gap-2">
-                        <Gift className="w-4 h-4 text-[#1abc9c]" />
-                        <span className="text-xs text-[#1abc9c] font-medium">{community.matchingFunds.matchPercentage}% match</span>
-                      </div>
-                      <span className="text-xs text-[#6b7280]">up to ${community.matchingFunds.maxMatch.toLocaleString()}</span>
+                    <div className="flex items-center gap-2 p-2 bg-[#1abc9c]/5 rounded-lg">
+                      <Gift className="w-4 h-4 text-[#1abc9c]" />
+                      <span className="text-xs text-[#1abc9c] font-medium">Matching Funds Available</span>
                     </div>
                   )}
                 </div>
@@ -3223,19 +3294,8 @@ function CommunityDetailPage({ communityId, setCurrentPage }: { communityId: str
                   <p className="text-sm text-[#6b7280]">Sponsored by {community.matchingFunds.sponsor}</p>
                 </div>
               </div>
-              <div className="flex items-center gap-6">
-                <div className="text-center">
-                  <p className="text-xl font-bold text-[#1abc9c]">{community.matchingFunds.matchPercentage}%</p>
-                  <p className="text-xs text-[#6b7280]">Match Rate</p>
-                </div>
-                <div className="text-center">
-                  <p className="text-xl font-bold text-[#12284b]">${community.matchingFunds.maxMatch.toLocaleString()}</p>
-                  <p className="text-xs text-[#6b7280]">Max per Month</p>
-                </div>
-                <div className="text-center">
-                  <p className="text-xl font-bold text-[#2467ec]">${(community.matchingFunds.poolAmount / 1000).toFixed(0)}K</p>
-                  <p className="text-xs text-[#6b7280]">Pool Size</p>
-                </div>
+              <div className="flex items-center gap-2">
+                <Badge className="bg-[#1abc9c]/10 text-[#1abc9c] text-sm px-3 py-1">Eligible Stacks Get Matched</Badge>
               </div>
             </div>
           </div>
@@ -4401,7 +4461,7 @@ function CreateCommunityPage({ setCurrentPage }: { setCurrentPage: (page: string
                     {[
                       { label: 'Governance', value: governance === 'democratic' ? 'Democratic' : governance === 'admin_led' ? 'Admin-Led' : 'Hybrid', icon: Gavel },
                       { label: 'Matchmaking', value: enableMatchmaking ? 'Enabled' : 'Disabled', icon: Compass },
-                      { label: 'Matching Funds', value: enableMatchingFunds ? `${matchPercentage}% match, up to $${maxMatch || '0'}/mo` : 'None', icon: Gift },
+                      { label: 'Matching Funds', value: enableMatchingFunds ? 'Available' : 'None', icon: Gift },
                       ...(enableMatchingFunds && matchSponsor ? [{ label: 'Sponsor', value: matchSponsor, icon: Building2 }] : []),
                     ].map((item, i) => (
                       <div key={i} className="flex items-center justify-between p-3 bg-[#f9fafb] rounded-lg">
