@@ -227,6 +227,12 @@ type Community = {
   governanceModel: 'democratic' | 'admin_led' | 'hybrid';
   requirements?: string[];
   matchmakingEnabled: boolean;
+  matchingFunds?: {
+    poolAmount: number;
+    matchPercentage: number;
+    maxMatch: number;
+    sponsor: string;
+  };
 };
 
 type CommunityMember = {
@@ -674,6 +680,7 @@ const MOCK_COMMUNITIES: Community[] = [
     isJoined: true,
     governanceModel: 'democratic',
     matchmakingEnabled: true,
+    matchingFunds: { poolAmount: 50000, matchPercentage: 25, maxMatch: 500, sponsor: 'National Housing Foundation' },
   },
   {
     id: 'c2',
@@ -689,6 +696,7 @@ const MOCK_COMMUNITIES: Community[] = [
     isJoined: false,
     governanceModel: 'hybrid',
     matchmakingEnabled: true,
+    matchingFunds: { poolAmount: 75000, matchPercentage: 50, maxMatch: 300, sponsor: 'Community Safety Net Fund' },
   },
   {
     id: 'c3',
@@ -718,6 +726,7 @@ const MOCK_COMMUNITIES: Community[] = [
     tags: ['cooperativa', 'tanda', 'ahorro colectivo'],
     isJoined: true,
     governanceModel: 'admin_led',
+    matchingFunds: { poolAmount: 200000, matchPercentage: 75, maxMatch: 3000, sponsor: 'Grupo Financiero del Bajío (Employer)' },
     requirements: ['Must be an employee or partner of Grupo Financiero del Bajío', 'Valid employee ID or partner credential required'],
     matchmakingEnabled: false,
   },
@@ -735,6 +744,7 @@ const MOCK_COMMUNITIES: Community[] = [
     isJoined: false,
     governanceModel: 'democratic',
     matchmakingEnabled: true,
+    matchingFunds: { poolAmount: 30000, matchPercentage: 30, maxMatch: 250, sponsor: 'Family First Initiative' },
   },
   {
     id: 'c6',
@@ -2938,7 +2948,7 @@ function InvestmentsPage({ user, setCurrentPage: _setCurrentPage }: { user: User
 }
 
 function CommunitiesPage({ setCurrentPage, navigateToCommunity }: { setCurrentPage: (page: string) => void; navigateToCommunity: (id: string) => void }) {
-  void setCurrentPage; // used for future navigation actions
+
   const [filter, setFilter] = useState<'all' | 'joined' | 'public' | 'private'>('all');
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -2959,7 +2969,7 @@ function CommunitiesPage({ setCurrentPage, navigateToCommunity }: { setCurrentPa
             <h1 className="text-3xl font-bold text-[#12284b] font-['Poppins']">Communities</h1>
             <p className="text-[#6b7280]">Find your people, form your stacks, reach your goals together</p>
           </div>
-          <Button className="bg-[#2467ec] hover:bg-[#1a5fd4] rounded-full">
+          <Button onClick={() => setCurrentPage('create-community')} className="bg-[#2467ec] hover:bg-[#1a5fd4] rounded-full">
             <Plus className="w-4 h-4 mr-2" />
             Create Community
           </Button>
@@ -3057,12 +3067,23 @@ function CommunitiesPage({ setCurrentPage, navigateToCommunity }: { setCurrentPa
                   </div>
                 </div>
 
-                {community.matchmakingEnabled && (
-                  <div className="mt-4 flex items-center gap-2 p-2 bg-[#9b59b6]/5 rounded-lg">
-                    <Compass className="w-4 h-4 text-[#9b59b6]" />
-                    <span className="text-xs text-[#9b59b6] font-medium">Matchmaking available</span>
-                  </div>
-                )}
+                <div className="mt-4 space-y-2">
+                  {community.matchmakingEnabled && (
+                    <div className="flex items-center gap-2 p-2 bg-[#9b59b6]/5 rounded-lg">
+                      <Compass className="w-4 h-4 text-[#9b59b6]" />
+                      <span className="text-xs text-[#9b59b6] font-medium">Matchmaking available</span>
+                    </div>
+                  )}
+                  {community.matchingFunds && (
+                    <div className="flex items-center justify-between p-2 bg-[#1abc9c]/5 rounded-lg">
+                      <div className="flex items-center gap-2">
+                        <Gift className="w-4 h-4 text-[#1abc9c]" />
+                        <span className="text-xs text-[#1abc9c] font-medium">{community.matchingFunds.matchPercentage}% match</span>
+                      </div>
+                      <span className="text-xs text-[#6b7280]">up to ${community.matchingFunds.maxMatch.toLocaleString()}</span>
+                    </div>
+                  )}
+                </div>
               </CardContent>
             </Card>
           ))}
@@ -3082,7 +3103,7 @@ function CommunitiesPage({ setCurrentPage, navigateToCommunity }: { setCurrentPa
             <Compass className="w-10 h-10 mx-auto mb-3" />
             <h3 className="text-xl font-bold mb-2 font-['Poppins']">Can't find what you're looking for?</h3>
             <p className="text-white/80 mb-4 max-w-md mx-auto">Create your own community and invite others who share your savings goals.</p>
-            <Button variant="secondary" className="rounded-full bg-white text-[#2467ec] hover:bg-gray-100">
+            <Button onClick={() => setCurrentPage('create-community')} variant="secondary" className="rounded-full bg-white text-[#2467ec] hover:bg-gray-100">
               Start a Community
             </Button>
           </CardContent>
@@ -3174,6 +3195,37 @@ function CommunityDetailPage({ communityId, setCurrentPage }: { communityId: str
             </Card>
           ))}
         </div>
+
+        {/* Matching Funds Banner */}
+        {community.matchingFunds && (
+          <div className="mb-8 p-5 bg-gradient-to-r from-[#1abc9c]/10 to-[#2467ec]/10 rounded-2xl border border-[#1abc9c]/20">
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-xl bg-[#1abc9c]/20 flex items-center justify-center">
+                  <Gift className="w-6 h-6 text-[#1abc9c]" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-[#12284b]">Matching Funds Available</h3>
+                  <p className="text-sm text-[#6b7280]">Sponsored by {community.matchingFunds.sponsor}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-6">
+                <div className="text-center">
+                  <p className="text-xl font-bold text-[#1abc9c]">{community.matchingFunds.matchPercentage}%</p>
+                  <p className="text-xs text-[#6b7280]">Match Rate</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-xl font-bold text-[#12284b]">${community.matchingFunds.maxMatch.toLocaleString()}</p>
+                  <p className="text-xs text-[#6b7280]">Max per Month</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-xl font-bold text-[#2467ec]">${(community.matchingFunds.poolAmount / 1000).toFixed(0)}K</p>
+                  <p className="text-xs text-[#6b7280]">Pool Size</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Tabs */}
         <div className="flex gap-1 mb-8 bg-white rounded-xl p-1 shadow-sm border border-gray-100 w-fit">
@@ -3969,6 +4021,426 @@ function CommunityDetailPage({ communityId, setCurrentPage }: { communityId: str
             )}
           </div>
         )}
+      </div>
+    </div>
+  );
+}
+
+function CreateCommunityPage({ setCurrentPage }: { setCurrentPage: (page: string) => void }) {
+  const [step, setStep] = useState(1);
+  const [communityName, setCommunityName] = useState('');
+  const [communityType, setCommunityType] = useState<'public' | 'private'>('public');
+  const [category, setCategory] = useState('');
+  const [description, setDescription] = useState('');
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [customTag, setCustomTag] = useState('');
+  const [governance, setGovernance] = useState<'democratic' | 'admin_led' | 'hybrid'>('democratic');
+  const [enableMatchmaking, setEnableMatchmaking] = useState(true);
+  const [enableMatchingFunds, setEnableMatchingFunds] = useState(false);
+  const [matchPercentage, setMatchPercentage] = useState('25');
+  const [maxMatch, setMaxMatch] = useState('');
+  const [matchSponsor, setMatchSponsor] = useState('');
+
+  const totalSteps = 4;
+
+  const suggestedTags: Record<string, string[]> = {
+    Housing: ['down payment', 'homeownership', 'mortgage', 'first home', 'closing costs'],
+    'Emergency Savings': ['safety net', 'emergency fund', 'rainy day', '3-6 months'],
+    'Debt Payoff': ['student loans', 'credit cards', 'debt free', 'snowball method'],
+    Family: ['childcare', 'education', 'family budget', 'parenting'],
+    Business: ['small business', 'startup', 'growth capital', 'equipment'],
+    Retirement: ['401k', 'retirement', 'long-term', 'pension'],
+    Travel: ['vacation', 'travel fund', 'group trip'],
+    Education: ['tuition', 'books', 'certification', 'skill building'],
+    Other: ['general savings', 'community', 'custom goal'],
+  };
+
+  const categories = Object.keys(suggestedTags);
+
+  return (
+    <div className="min-h-screen bg-[#f9fafb] pt-24 pb-12">
+      <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Back button */}
+        <button onClick={() => setCurrentPage('communities')} className="flex items-center gap-2 text-[#6b7280] hover:text-[#12284b] mb-6">
+          <ChevronLeft className="w-4 h-4" />
+          Back to Communities
+        </button>
+
+        {/* Header */}
+        <div className="text-center mb-8">
+          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#2467ec] to-[#1abc9c] flex items-center justify-center mx-auto mb-4">
+            <Globe className="w-8 h-8 text-white" />
+          </div>
+          <h1 className="text-3xl font-bold text-[#12284b] font-['Poppins']">Create a Community</h1>
+          <p className="text-[#6b7280] mt-2">Build a space where people can connect, save, and grow together</p>
+        </div>
+
+        {/* Progress Bar */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-2">
+            {[1, 2, 3, 4].map(s => (
+              <div key={s} className="flex items-center gap-2">
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-colors ${step >= s ? 'bg-[#2467ec] text-white' : 'bg-gray-200 text-[#6b7280]'}`}>
+                  {step > s ? <Check className="w-4 h-4" /> : s}
+                </div>
+                <span className={`text-xs hidden sm:block ${step >= s ? 'text-[#2467ec] font-medium' : 'text-[#6b7280]'}`}>
+                  {s === 1 ? 'Basics' : s === 2 ? 'Details' : s === 3 ? 'Settings' : 'Review'}
+                </span>
+              </div>
+            ))}
+          </div>
+          <Progress value={(step / totalSteps) * 100} className="h-2" />
+        </div>
+
+        <Card className="border-0 shadow-xl">
+          <CardContent className="p-8">
+            {/* Step 1: Basics */}
+            {step === 1 && (
+              <div className="space-y-6">
+                <div>
+                  <h2 className="text-xl font-semibold text-[#12284b] mb-1 font-['Poppins']">The Basics</h2>
+                  <p className="text-sm text-[#6b7280]">What is your community about?</p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium text-[#12284b]">Community Name</Label>
+                  <Input
+                    placeholder="e.g., First-Time Homebuyers, Emergency Fund Builders"
+                    value={communityName}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setCommunityName(e.target.value)}
+                    className="h-12 rounded-xl"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium text-[#12284b]">Community Type</Label>
+                  <div className="grid grid-cols-2 gap-4">
+                    {([
+                      { value: 'public' as const, label: 'Public', icon: Globe, desc: 'Anyone can find and join', color: 'border-[#1abc9c] bg-[#1abc9c]/5' },
+                      { value: 'private' as const, label: 'Private', icon: Lock, desc: 'Invite or approval required', color: 'border-[#f39c12] bg-[#f39c12]/5' },
+                    ]).map(opt => (
+                      <button
+                        key={opt.value}
+                        onClick={() => setCommunityType(opt.value)}
+                        className={`p-4 rounded-xl border-2 text-left transition-all ${communityType === opt.value ? opt.color : 'border-gray-200 hover:border-gray-300'}`}
+                      >
+                        <opt.icon className={`w-6 h-6 mb-2 ${communityType === opt.value ? (opt.value === 'public' ? 'text-[#1abc9c]' : 'text-[#f39c12]') : 'text-[#6b7280]'}`} />
+                        <p className="font-medium text-[#12284b]">{opt.label}</p>
+                        <p className="text-xs text-[#6b7280] mt-1">{opt.desc}</p>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium text-[#12284b]">Category</Label>
+                  <div className="grid grid-cols-3 gap-2">
+                    {categories.map(cat => (
+                      <button
+                        key={cat}
+                        onClick={() => { setCategory(cat); setSelectedTags([]); }}
+                        className={`p-3 rounded-xl text-sm font-medium transition-colors ${category === cat ? 'bg-[#2467ec] text-white' : 'bg-[#f9fafb] text-[#6b7280] hover:bg-gray-100'}`}
+                      >
+                        {cat}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Step 2: Details */}
+            {step === 2 && (
+              <div className="space-y-6">
+                <div>
+                  <h2 className="text-xl font-semibold text-[#12284b] mb-1 font-['Poppins']">Tell People More</h2>
+                  <p className="text-sm text-[#6b7280]">Help people understand what your community is about</p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium text-[#12284b]">Description</Label>
+                  <Textarea
+                    placeholder="Describe your community's purpose, who it's for, and what members can expect..."
+                    value={description}
+                    onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setDescription(e.target.value)}
+                    className="min-h-[120px] rounded-xl resize-none"
+                  />
+                  <p className="text-xs text-[#6b7280]">{description.length}/500 characters</p>
+                </div>
+
+                <div className="space-y-3">
+                  <Label className="text-sm font-medium text-[#12284b]">Tags</Label>
+                  <p className="text-xs text-[#6b7280]">Help people find your community. Select suggested tags or add your own.</p>
+                  {category && suggestedTags[category] && (
+                    <div className="flex flex-wrap gap-2">
+                      {suggestedTags[category].map(tag => (
+                        <button
+                          key={tag}
+                          onClick={() => setSelectedTags(prev => prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag])}
+                          className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${selectedTags.includes(tag) ? 'bg-[#2467ec] text-white' : 'bg-gray-100 text-[#6b7280] hover:bg-gray-200'}`}
+                        >
+                          <Hash className="w-3 h-3" />{tag}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                  <div className="flex gap-2">
+                    <Input
+                      placeholder="Add a custom tag..."
+                      value={customTag}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => setCustomTag(e.target.value)}
+                      onKeyDown={(e: React.KeyboardEvent) => {
+                        if (e.key === 'Enter' && customTag.trim()) {
+                          setSelectedTags(prev => [...prev, customTag.trim()]);
+                          setCustomTag('');
+                        }
+                      }}
+                      className="rounded-full text-sm"
+                    />
+                    <Button
+                      variant="outline"
+                      className="rounded-full"
+                      onClick={() => {
+                        if (customTag.trim()) {
+                          setSelectedTags(prev => [...prev, customTag.trim()]);
+                          setCustomTag('');
+                        }
+                      }}
+                    >
+                      <Plus className="w-4 h-4" />
+                    </Button>
+                  </div>
+                  {selectedTags.length > 0 && (
+                    <div className="flex flex-wrap gap-2 pt-2">
+                      {selectedTags.map(tag => (
+                        <span key={tag} className="inline-flex items-center gap-1 px-3 py-1.5 bg-[#2467ec]/10 text-[#2467ec] rounded-full text-xs font-medium">
+                          <Hash className="w-3 h-3" />{tag}
+                          <button onClick={() => setSelectedTags(prev => prev.filter(t => t !== tag))} className="ml-1 hover:text-[#e74c3c]">
+                            <X className="w-3 h-3" />
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Step 3: Settings */}
+            {step === 3 && (
+              <div className="space-y-6">
+                <div>
+                  <h2 className="text-xl font-semibold text-[#12284b] mb-1 font-['Poppins']">Community Settings</h2>
+                  <p className="text-sm text-[#6b7280]">Configure how your community operates</p>
+                </div>
+
+                <div className="space-y-3">
+                  <Label className="text-sm font-medium text-[#12284b]">Governance Model</Label>
+                  <div className="space-y-3">
+                    {([
+                      { value: 'democratic' as const, label: 'Democratic', desc: 'All members vote on decisions. One person, one vote.', icon: Users },
+                      { value: 'admin_led' as const, label: 'Admin-Led', desc: 'Admins make decisions. Best for company/org communities.', icon: Crown },
+                      { value: 'hybrid' as const, label: 'Hybrid', desc: 'Admins handle day-to-day, members vote on big changes.', icon: Gavel },
+                    ]).map(opt => (
+                      <button
+                        key={opt.value}
+                        onClick={() => setGovernance(opt.value)}
+                        className={`flex items-start gap-4 w-full p-4 rounded-xl border-2 text-left transition-all ${governance === opt.value ? 'border-[#2467ec] bg-[#2467ec]/5' : 'border-gray-200 hover:border-gray-300'}`}
+                      >
+                        <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${governance === opt.value ? 'bg-[#2467ec]/20' : 'bg-gray-100'}`}>
+                          <opt.icon className={`w-5 h-5 ${governance === opt.value ? 'text-[#2467ec]' : 'text-[#6b7280]'}`} />
+                        </div>
+                        <div>
+                          <p className={`font-medium ${governance === opt.value ? 'text-[#2467ec]' : 'text-[#12284b]'}`}>{opt.label}</p>
+                          <p className="text-xs text-[#6b7280] mt-0.5">{opt.desc}</p>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <Separator />
+
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-medium text-[#12284b]">Enable Matchmaking</p>
+                      <p className="text-xs text-[#6b7280]">AI helps members find compatible stack partners</p>
+                    </div>
+                    <button
+                      onClick={() => setEnableMatchmaking(!enableMatchmaking)}
+                      className={`w-12 h-6 rounded-full relative transition-colors ${enableMatchmaking ? 'bg-[#2467ec]' : 'bg-gray-300'}`}
+                    >
+                      <span className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform ${enableMatchmaking ? 'translate-x-6' : 'translate-x-0.5'}`} />
+                    </button>
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-medium text-[#12284b]">Matching Funds</p>
+                      <p className="text-xs text-[#6b7280]">Offer matched savings from a sponsor or organization</p>
+                    </div>
+                    <button
+                      onClick={() => setEnableMatchingFunds(!enableMatchingFunds)}
+                      className={`w-12 h-6 rounded-full relative transition-colors ${enableMatchingFunds ? 'bg-[#1abc9c]' : 'bg-gray-300'}`}
+                    >
+                      <span className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform ${enableMatchingFunds ? 'translate-x-6' : 'translate-x-0.5'}`} />
+                    </button>
+                  </div>
+
+                  {enableMatchingFunds && (
+                    <div className="p-4 bg-[#1abc9c]/5 rounded-xl border border-[#1abc9c]/20 space-y-4">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Gift className="w-4 h-4 text-[#1abc9c]" />
+                        <span className="text-sm font-medium text-[#12284b]">Matching Fund Details</span>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-1">
+                          <Label className="text-xs text-[#6b7280]">Match Rate (%)</Label>
+                          <Select value={matchPercentage} onValueChange={setMatchPercentage}>
+                            <SelectTrigger className="rounded-lg"><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                              {['10', '25', '50', '75', '100'].map(v => (
+                                <SelectItem key={v} value={v}>{v}%</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs text-[#6b7280]">Max Match ($/mo)</Label>
+                          <Input
+                            placeholder="e.g., 500"
+                            value={maxMatch}
+                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setMaxMatch(e.target.value)}
+                            className="rounded-lg"
+                          />
+                        </div>
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-xs text-[#6b7280]">Sponsor Name</Label>
+                        <Input
+                          placeholder="e.g., Company name, Foundation, etc."
+                          value={matchSponsor}
+                          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setMatchSponsor(e.target.value)}
+                          className="rounded-lg"
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Step 4: Review */}
+            {step === 4 && (
+              <div className="space-y-6">
+                <div>
+                  <h2 className="text-xl font-semibold text-[#12284b] mb-1 font-['Poppins']">Review & Launch</h2>
+                  <p className="text-sm text-[#6b7280]">Make sure everything looks good</p>
+                </div>
+
+                <div className="space-y-4">
+                  {/* Preview Card */}
+                  <Card className="border-2 border-dashed border-[#2467ec]/30">
+                    <CardContent className="p-6">
+                      <div className="flex items-center gap-3 mb-3">
+                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${communityType === 'public' ? 'bg-[#1abc9c]/10' : 'bg-[#f39c12]/10'}`}>
+                          {communityType === 'public' ? <Globe className="w-6 h-6 text-[#1abc9c]" /> : <Lock className="w-6 h-6 text-[#f39c12]" />}
+                        </div>
+                        <div>
+                          <h3 className="font-semibold text-[#12284b]">{communityName || 'Community Name'}</h3>
+                          <div className="flex items-center gap-2 mt-1">
+                            <Badge className={`text-xs ${communityType === 'public' ? 'bg-[#1abc9c]/10 text-[#1abc9c]' : 'bg-[#f39c12]/10 text-[#f39c12]'}`}>
+                              {communityType === 'public' ? 'Public' : 'Private'}
+                            </Badge>
+                            {category && <Badge className="bg-gray-100 text-[#6b7280] text-xs">{category}</Badge>}
+                          </div>
+                        </div>
+                      </div>
+                      <p className="text-sm text-[#6b7280] mb-3">{description || 'No description provided'}</p>
+                      {selectedTags.length > 0 && (
+                        <div className="flex flex-wrap gap-1.5 mb-3">
+                          {selectedTags.map(tag => (
+                            <span key={tag} className="inline-flex items-center gap-1 text-xs px-2 py-1 bg-[#2467ec]/5 rounded-full text-[#2467ec]">
+                              <Hash className="w-3 h-3" />{tag}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+
+                  {/* Settings Summary */}
+                  <div className="space-y-3">
+                    <h4 className="text-sm font-medium text-[#12284b]">Settings Summary</h4>
+                    {[
+                      { label: 'Governance', value: governance === 'democratic' ? 'Democratic' : governance === 'admin_led' ? 'Admin-Led' : 'Hybrid', icon: Gavel },
+                      { label: 'Matchmaking', value: enableMatchmaking ? 'Enabled' : 'Disabled', icon: Compass },
+                      { label: 'Matching Funds', value: enableMatchingFunds ? `${matchPercentage}% match, up to $${maxMatch || '0'}/mo` : 'None', icon: Gift },
+                      ...(enableMatchingFunds && matchSponsor ? [{ label: 'Sponsor', value: matchSponsor, icon: Building2 }] : []),
+                    ].map((item, i) => (
+                      <div key={i} className="flex items-center justify-between p-3 bg-[#f9fafb] rounded-lg">
+                        <div className="flex items-center gap-2">
+                          <item.icon className="w-4 h-4 text-[#2467ec]" />
+                          <span className="text-sm text-[#6b7280]">{item.label}</span>
+                        </div>
+                        <span className="text-sm font-medium text-[#12284b]">{item.value}</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="p-4 bg-[#2467ec]/5 rounded-xl border border-[#2467ec]/20">
+                    <div className="flex items-start gap-3">
+                      <Shield className="w-5 h-5 text-[#2467ec] flex-shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-sm font-medium text-[#12284b]">You'll be the admin</p>
+                        <p className="text-xs text-[#6b7280]">As the creator, you'll have full admin rights. You can add moderators and adjust settings anytime after launch.</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Navigation Buttons */}
+            <div className="flex items-center justify-between mt-8 pt-6 border-t border-gray-100">
+              <Button
+                variant="outline"
+                onClick={() => step > 1 ? setStep(step - 1) : setCurrentPage('communities')}
+                className="rounded-full"
+              >
+                <ChevronLeft className="w-4 h-4 mr-1" />
+                {step === 1 ? 'Cancel' : 'Back'}
+              </Button>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-[#6b7280]">Step {step} of {totalSteps}</span>
+                <Button
+                  onClick={() => {
+                    if (step < totalSteps) {
+                      setStep(step + 1);
+                    } else {
+                      setCurrentPage('communities');
+                    }
+                  }}
+                  className={`rounded-full ${step === totalSteps ? 'bg-[#1abc9c] hover:bg-[#16a085]' : 'bg-[#2467ec] hover:bg-[#1a5fd4]'}`}
+                  disabled={step === 1 && (!communityName.trim() || !category)}
+                >
+                  {step === totalSteps ? (
+                    <>
+                      <Sparkles className="w-4 h-4 mr-1.5" />
+                      Launch Community
+                    </>
+                  ) : (
+                    <>
+                      Next
+                      <ChevronRight className="w-4 h-4 ml-1" />
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
@@ -5294,6 +5766,8 @@ function App() {
         return <CommunitiesPage setCurrentPage={setCurrentPage} navigateToCommunity={navigateToCommunity} />;
       case 'community-detail':
         return <CommunityDetailPage communityId={selectedCommunityId} setCurrentPage={setCurrentPage} />;
+      case 'create-community':
+        return <CreateCommunityPage setCurrentPage={setCurrentPage} />;
       case 'matching':
         return <MatchingFundsPage setCurrentPage={setCurrentPage} />;
       case 'demographics':
