@@ -1593,10 +1593,16 @@ function LandingPage({ setCurrentPage }: { setCurrentPage: (page: string) => voi
 function AuthPage({ type, setCurrentPage, onLogin }: { type: 'login' | 'signup'; setCurrentPage: (page: string) => void; onLogin: () => void }) {
   const [showPassword, setShowPassword] = useState(false);
   const [step, setStep] = useState(1);
+  const [savingsGoals, setSavingsGoals] = useState<string[]>([]);
+  const [targetAmount, setTargetAmount] = useState('');
+  const [timeline, setTimeline] = useState('');
+  const [monthlyContribution, setMonthlyContribution] = useState('');
+
+  const totalSignupSteps = 4;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (type === 'signup' && step < 3) {
+    if (type === 'signup' && step < totalSignupSteps) {
       setStep(step + 1);
     } else {
       onLogin();
@@ -1604,8 +1610,22 @@ function AuthPage({ type, setCurrentPage, onLogin }: { type: 'login' | 'signup';
     }
   };
 
+  const goalOptions = [
+    { id: 'home', label: 'Buy a Home', icon: Landmark, desc: 'Save for a down payment' },
+    { id: 'emergency', label: 'Emergency Fund', icon: Shield, desc: 'Build a safety net' },
+    { id: 'debt', label: 'Pay Off Debt', icon: Target, desc: 'Student loans, credit cards, etc.' },
+    { id: 'retirement', label: 'Retirement', icon: Sprout, desc: 'Long-term wealth building' },
+    { id: 'education', label: 'Education', icon: Award, desc: 'Tuition, courses, certifications' },
+    { id: 'business', label: 'Start a Business', icon: Briefcase, desc: 'Entrepreneurship fund' },
+    { id: 'travel', label: 'Travel', icon: Globe, desc: 'Vacation or trip savings' },
+    { id: 'other', label: 'Something Else', icon: Sparkles, desc: 'Custom savings goal' },
+  ];
+
+  const stepTitles = ['Create Account', 'Your Savings Goals', 'Verify Identity', 'Secure Your Account'];
+  const stepDescs = ['Start building your financial future', 'Tell us what you\'re saving for so we can match you with the right communities', 'Help us prevent fraud and protect the community', 'Set up security for your account'];
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-teal-50 pt-20">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-teal-50 pt-20 pb-8">
       <div className="w-full max-w-md px-4">
         <Card className="shadow-xl border-0">
           <CardHeader className="text-center">
@@ -1613,15 +1633,128 @@ function AuthPage({ type, setCurrentPage, onLogin }: { type: 'login' | 'signup';
               <Users className="w-8 h-8 text-white" />
             </div>
             <CardTitle className="text-2xl font-bold text-[#12284b] font-['Poppins']">
-              {type === 'login' ? 'Welcome Back' : step === 1 ? 'Create Account' : step === 2 ? 'Verify Identity' : 'Secure Your Account'}
+              {type === 'login' ? 'Welcome Back' : stepTitles[step - 1]}
             </CardTitle>
             <CardDescription>
-              {type === 'login' ? 'Sign in to continue your savings journey' : step === 1 ? 'Start building your financial future' : step === 2 ? 'Help us prevent fraud and protect the community' : 'Set up security for your account'}
+              {type === 'login' ? 'Sign in to continue your savings journey' : stepDescs[step - 1]}
             </CardDescription>
+            {type === 'signup' && (
+              <div className="flex items-center gap-1.5 justify-center mt-3">
+                {[1, 2, 3, 4].map(s => (
+                  <div key={s} className={`h-1.5 rounded-full transition-all ${s <= step ? 'bg-[#2467ec] w-8' : 'bg-gray-200 w-4'}`} />
+                ))}
+              </div>
+            )}
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
-              {type === 'signup' && step === 2 ? (
+              {/* Step 1: Account Info */}
+              {type === 'signup' && step === 1 && (
+                <>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="firstName">First Name</Label>
+                      <Input id="firstName" placeholder="John" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="lastName">Last Name</Label>
+                      <Input id="lastName" placeholder="Doe" />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Email</Label>
+                    <Input id="email" type="email" placeholder="you@example.com" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="password">Password</Label>
+                    <div className="relative">
+                      <Input id="password" type={showPassword ? 'text' : 'password'} placeholder="••••••••" />
+                      <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#6b7280]">
+                        {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {/* Step 2: Savings Goals */}
+              {type === 'signup' && step === 2 && (
+                <div className="space-y-5">
+                  <div className="space-y-3">
+                    <Label className="text-sm font-medium text-[#12284b]">What are you saving for?</Label>
+                    <p className="text-xs text-[#6b7280]">Select all that apply</p>
+                    <div className="grid grid-cols-2 gap-2">
+                      {goalOptions.map(goal => (
+                        <button
+                          key={goal.id}
+                          type="button"
+                          onClick={() => setSavingsGoals(prev => prev.includes(goal.id) ? prev.filter(g => g !== goal.id) : [...prev, goal.id])}
+                          className={`flex items-start gap-2.5 p-3 rounded-xl text-left transition-all border-2 ${savingsGoals.includes(goal.id) ? 'border-[#2467ec] bg-[#2467ec]/5' : 'border-gray-100 hover:border-gray-200'}`}
+                        >
+                          <goal.icon className={`w-5 h-5 flex-shrink-0 mt-0.5 ${savingsGoals.includes(goal.id) ? 'text-[#2467ec]' : 'text-[#6b7280]'}`} />
+                          <div>
+                            <p className={`text-sm font-medium ${savingsGoals.includes(goal.id) ? 'text-[#2467ec]' : 'text-[#12284b]'}`}>{goal.label}</p>
+                            <p className="text-xs text-[#6b7280]">{goal.desc}</p>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <Separator />
+
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium text-[#12284b]">How much are you looking to save?</Label>
+                    <div className="grid grid-cols-3 gap-2">
+                      {['Under $1K', '$1K–$5K', '$5K–$10K', '$10K–$25K', '$25K–$50K', '$50K+'].map(amt => (
+                        <button
+                          key={amt}
+                          type="button"
+                          onClick={() => setTargetAmount(amt)}
+                          className={`p-2.5 rounded-lg text-xs font-medium transition-colors ${targetAmount === amt ? 'bg-[#2467ec] text-white' : 'bg-[#f9fafb] text-[#6b7280] hover:bg-gray-100'}`}
+                        >
+                          {amt}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium text-[#12284b]">What's your timeline?</Label>
+                    <div className="grid grid-cols-3 gap-2">
+                      {['3 months', '6 months', '1 year', '2 years', '3+ years', 'No rush'].map(t => (
+                        <button
+                          key={t}
+                          type="button"
+                          onClick={() => setTimeline(t)}
+                          className={`p-2.5 rounded-lg text-xs font-medium transition-colors ${timeline === t ? 'bg-[#1abc9c] text-white' : 'bg-[#f9fafb] text-[#6b7280] hover:bg-gray-100'}`}
+                        >
+                          {t}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium text-[#12284b]">How much can you save per month?</Label>
+                    <div className="grid grid-cols-3 gap-2">
+                      {['Under $50', '$50–$100', '$100–$250', '$250–$500', '$500–$1K', '$1K+'].map(c => (
+                        <button
+                          key={c}
+                          type="button"
+                          onClick={() => setMonthlyContribution(c)}
+                          className={`p-2.5 rounded-lg text-xs font-medium transition-colors ${monthlyContribution === c ? 'bg-[#9b59b6] text-white' : 'bg-[#f9fafb] text-[#6b7280] hover:bg-gray-100'}`}
+                        >
+                          {c}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Step 3: Verify Identity */}
+              {type === 'signup' && step === 3 && (
                 <div className="space-y-4">
                   <div className="p-4 bg-[#f9fafb] rounded-lg">
                     <div className="flex items-center gap-3 mb-3">
@@ -1647,7 +1780,10 @@ function AuthPage({ type, setCurrentPage, onLogin }: { type: 'login' | 'signup';
                     </div>
                   </div>
                 </div>
-              ) : type === 'signup' && step === 3 ? (
+              )}
+
+              {/* Step 4: Secure Account */}
+              {type === 'signup' && step === 4 && (
                 <div className="space-y-4">
                   <div className="space-y-2">
                     <Label>Set PIN Code</Label>
@@ -1664,20 +1800,11 @@ function AuthPage({ type, setCurrentPage, onLogin }: { type: 'login' | 'signup';
                     </label>
                   </div>
                 </div>
-              ) : (
+              )}
+
+              {/* Login form */}
+              {type === 'login' && (
                 <>
-                  {type === 'signup' && (
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="firstName">First Name</Label>
-                        <Input id="firstName" placeholder="John" />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="lastName">Last Name</Label>
-                        <Input id="lastName" placeholder="Doe" />
-                      </div>
-                    </div>
-                  )}
                   <div className="space-y-2">
                     <Label htmlFor="email">Email</Label>
                     <Input id="email" type="email" placeholder="you@example.com" />
@@ -1691,20 +1818,25 @@ function AuthPage({ type, setCurrentPage, onLogin }: { type: 'login' | 'signup';
                       </button>
                     </div>
                   </div>
-                  {type === 'login' && (
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <Checkbox id="remember" />
-                        <label htmlFor="remember" className="text-sm text-[#6b7280]">Remember me</label>
-                      </div>
-                      <button type="button" className="text-sm text-[#2467ec] hover:underline">Forgot password?</button>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Checkbox id="remember" />
+                      <label htmlFor="remember" className="text-sm text-[#6b7280]">Remember me</label>
                     </div>
-                  )}
+                    <button type="button" className="text-sm text-[#2467ec] hover:underline">Forgot password?</button>
+                  </div>
                 </>
               )}
+
               <Button type="submit" className="w-full bg-[#2467ec] hover:bg-[#1a5fd4] text-white rounded-full h-12">
-                {type === 'login' ? 'Sign In' : step < 3 ? 'Continue' : 'Create Account'}
+                {type === 'login' ? 'Sign In' : step < totalSignupSteps ? 'Continue' : 'Create Account'}
               </Button>
+
+              {type === 'signup' && step === 2 && (
+                <button type="button" onClick={() => setStep(step + 1)} className="w-full text-sm text-[#6b7280] hover:text-[#12284b] transition-colors">
+                  Skip for now
+                </button>
+              )}
             </form>
             
             <div className="mt-6 text-center">
